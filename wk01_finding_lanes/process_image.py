@@ -100,15 +100,40 @@ def weighted_img(img, initial_img, alpha=0.8, beta=1., lamda=0.):
     """
     return cv2.addWeighted(initial_img, alpha, img, beta, lamda)
 
+def get_line_points(line):
+    [x1, y1, x2, y2] = line[0]
+    # line equation y = f(X)
+    m = (y2 - y1) / (x2 - x1)
+    def line_eq(m, X):
+        return m * (X - x1) + y1
 
-def fitting_line(gray, region_topy = 325):
-    # Find Contours and fitline to average lines
-    im2, contours, hierarchy = cv2.findContours(gray, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    for con in contours:
-        cnt = np.vstack(con)
+    line_func = np.vectorize(line_eq)
 
-    # then apply fitline() function
-    #return cv2.fitLine(cnt, cv2.DIST_L2, 0, 0.01, 0.01)
+    x = np.arange(x1, x2+1, dtype=np.uint16)
+    y = line_func(m, x).astype(np.uint16)
+    #return np.swapaxes([x,y],0,1)
+    #return np.dstack((x, y))
+    return np.stack((x,y), axis=-1)
+
+def hough_lines_points(img, rho, theta, threshold, min_line_len, max_line_gap):
+    """
+    `img` should be the output of a Canny transform.
+
+    Returns an image with hough lines drawn.
+    """
+    lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len,
+                            maxLineGap=max_line_gap)
+    cnt = np.array([], dtype=np.uint16).reshape(0,2)
+    for line in lines:
+        points = get_line_points(line)
+        cnt = np.vstack((cnt,points))
+    return cnt
+
+
+def fitting_line_points(gray, cnt, region_topy = 325):
+    # Fitline to average lines
+
+    # apply fitline() function
     [vx, vy, x, y] = cv2.fitLine(cnt, cv2.DIST_L2, 0, 0.01, 0.01)
     # Now find two extreme points on the line to draw line
     topx = int(((region_topy-y) * vx / vy) + x)
@@ -118,10 +143,14 @@ def fitting_line(gray, region_topy = 325):
     # Finally draw the line
     img = np.zeros_like(gray)
     cv2.line(img, (bottomx, gray.shape[0] - 1), (topx, region_topy), 255, 2)
-    cv2.imshow('img', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+#    cv2.imshow('img', img)
+#    cv2.waitKey(0)
+#    cv2.destroyAllWindows()
     return img
+
+def masking_line(region, gray):
+    cnt = hough_lines_points(region, 1, np.pi/180, 30, 20, 20)
+    return fitting_line_points(gray, cnt)
 
 def process_image(image):
     initial_image = np.copy(image)
@@ -140,40 +169,26 @@ def process_image(image):
 
     # This time we are defining a four sided polygon to mask
     imshape = image.shape
-    vertices = np.array([[(0,imshape[0]),(470, 290), (480, 290), (imshape[1],imshape[0])]], dtype=np.int32)
-    masked_edges = region_of_interest(image, vertices)
-    plt.imshow(masked_edges, cmap='gray')
-    plt.show()
-    #masked_edges = cv2.bitwise_and(edges, mask)
-    line_image = hough_lines(masked_edges, 1, np.pi/180, 30, 20, 20)
-    plt.imshow(line_image, cmap='gray')
-    plt.show()
-
-    mask = np.zeros_like(line_image)
-    # Create a "color" binary image to combine with line image
-    color_edges = np.dstack((line_image, mask, mask))
-    marked_image = weighted_img(color_edges, initial_image)
-    plt.imshow(marked_image)
-    plt.show()
+    mask = np.zeros_like(image)
 
     # Seperate left lane and right lane lines
-    left_vertices = np.array([[(0,imshape[0]),(470, 310), (470, imshape[0])]], dtype=np.int32)
-    right_vertices = np.array([[(490, 310), (490, imshape[0]), (imshape[1],imshape[0])]], dtype=np.int32)
-    left_masked_edges = region_of_interest(line_image, left_vertices)
-    right_masked_edges = region_of_interest(line_image, right_vertices)
+    left_vertices = np.array([[(0, imshape[0]), (470, 310), (470, imshape[0])]], dtype=np.int32)
+    right_vertices = np.array([[(490, 310), (490, imshape[0]), (imshape[1], imshape[0])]], dtype=np.int32)
+    left_masked_edges = region_of_interest(image, left_vertices)
+    right_masked_edges = region_of_interest(image, right_vertices)
     plt.imshow(left_masked_edges, cmap='gray')
     plt.show()
     plt.imshow(right_masked_edges, cmap='gray')
     plt.show()
 
-    left_line_img = fitting_line(left_masked_edges)
+    left_line_img = masking_line(left_masked_edges, image)
     # Create a "color" binary image to combine with line image
     color_fit_line = np.dstack((left_line_img, mask, mask))
     left_marked_image = weighted_img(color_fit_line, initial_image)
     plt.imshow(left_marked_image)
     plt.show()
 
-    right_line_img = fitting_line(right_masked_edges)
+    right_line_img = masking_line(right_masked_edges, image)
     # Create a "color" binary image to combine with line image
     right_color_fit_line = np.dstack((right_line_img, mask, mask))
     right_marked_image = weighted_img(right_color_fit_line, left_marked_image)
