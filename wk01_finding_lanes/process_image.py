@@ -152,7 +152,7 @@ def masking_line(region, gray):
     cnt = hough_lines_points(region, 1, np.pi/180, 30, 20, 20)
     return fitting_line_points(gray, cnt)
 
-def process_image(image):
+def process_image_debug(image):
     initial_image = np.copy(image)
     #printing out some stats and plotting
     print('This image is:', type(image), 'with dimesions:', image.shape)
@@ -196,6 +196,51 @@ def process_image(image):
     plt.show()
     return right_marked_image
 
+
+def process_image(image):
+    initial_image = np.copy(image)
+    #printing out some stats and plotting
+    print('This image is:', type(image), 'with dimesions:', image.shape)
+    # plt.imshow(image)  #call as plt.imshow(gray, cmap='gray') to show a grayscaled image
+    # plt.show()
+
+    image = grayscale(image)
+    # plt.imshow(image, cmap='gray')
+    # plt.show()
+    image = gaussian_blur(image, 7)
+    image = canny(image, 50, 150)
+    # plt.imshow(image, cmap='gray')  #call as plt.imshow(gray, cmap='gray') to show a grayscaled image
+    # plt.show()
+
+    # This time we are defining a four sided polygon to mask
+    imshape = image.shape
+    mask = np.zeros_like(image)
+
+    # Seperate left lane and right lane lines
+    left_vertices = np.array([[(0, imshape[0]), (470, 310), (470, imshape[0])]], dtype=np.int32)
+    right_vertices = np.array([[(490, 310), (490, imshape[0]), (imshape[1], imshape[0])]], dtype=np.int32)
+    left_masked_edges = region_of_interest(image, left_vertices)
+    right_masked_edges = region_of_interest(image, right_vertices)
+    # plt.imshow(left_masked_edges, cmap='gray')
+    # plt.show()
+    # plt.imshow(right_masked_edges, cmap='gray')
+    # plt.show()
+
+    left_line_img = masking_line(left_masked_edges, image)
+    # Create a "color" binary image to combine with line image
+    color_fit_line = np.dstack((left_line_img, mask, mask))
+    left_marked_image = weighted_img(color_fit_line, initial_image)
+    # plt.imshow(left_marked_image)
+    # plt.show()
+
+    right_line_img = masking_line(right_masked_edges, image)
+    # Create a "color" binary image to combine with line image
+    right_color_fit_line = np.dstack((right_line_img, mask, mask))
+    right_marked_image = weighted_img(right_color_fit_line, left_marked_image)
+    plt.imshow(right_marked_image)
+    plt.show()
+    return right_marked_image
+
 def process_image_file(img_file):
     # reading in an image
     image = mpimg.imread(img_file)
@@ -204,4 +249,6 @@ def process_image_file(img_file):
 import os
 image_files = os.listdir("test_images/")
 for file in image_files:
-    process_image_file("test_images/" + file)
+    ret_image = process_image_file("test_images/" + file)
+    ret_image = cv2.cvtColor(ret_image, cv2.COLOR_BGR2RGB)
+    cv2.imwrite("marked_" + file, ret_image)
