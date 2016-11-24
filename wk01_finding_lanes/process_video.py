@@ -124,9 +124,15 @@ def hough_lines_points(img, rho, theta, threshold, min_line_len, max_line_gap):
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len,
                             maxLineGap=max_line_gap)
     cnt = np.array([], dtype=np.uint16).reshape(0,2)
+    tmp = np.zeros_like(img)
     for line in lines:
+        [x1, y1, x2, y2] = line[0]
+        # print(line)
+        cv2.line(tmp, (x1, y1), (x2, y2), 255, 2)
         points = get_line_points(line)
         cnt = np.vstack((cnt,points))
+    # plt.imshow(tmp, cmap='gray')  #call as plt.imshow(gray, cmap='gray') to show a grayscaled image
+    # plt.show()
     return cnt
 
 
@@ -143,16 +149,20 @@ def fitting_line_points(gray, cnt, region_topy = 325):
     # Finally draw the line
     img = np.zeros_like(gray)
     cv2.line(img, (bottomx, gray.shape[0] - 1), (topx, region_topy), 255, 2)
-#    cv2.imshow('img', img)
-#    cv2.waitKey(0)
-#    cv2.destroyAllWindows()
+    # plt.imshow(img, cmap='gray')  #call as plt.imshow(gray, cmap='gray') to show a grayscaled image
+    # plt.show()
+    # cv2.imshow('img', img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     return img
 
 def masking_line(region, gray):
-    cnt = hough_lines_points(region, 1, np.pi/180, 30, 20, 20)
+    cnt = hough_lines_points(region, 2, np.pi/180, 15, 10, 20)
     return fitting_line_points(gray, cnt)
 
 def process_image_debug(image):
+    ret_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    cv2.imwrite('failed.jpg', ret_image)
     initial_image = np.copy(image)
     #printing out some stats and plotting
     print('This image is:', type(image), 'with dimesions:', image.shape)
@@ -172,8 +182,10 @@ def process_image_debug(image):
     mask = np.zeros_like(image)
 
     # Seperate left lane and right lane lines
-    left_vertices = np.array([[(0, imshape[0]), (470, 310), (470, imshape[0])]], dtype=np.int32)
-    right_vertices = np.array([[(490, 310), (490, imshape[0]), (imshape[1], imshape[0])]], dtype=np.int32)
+    # left_vertices = np.array([[(0, imshape[0]), (470, 325), (470, imshape[0])]], dtype=np.int32)
+    # right_vertices = np.array([[(490, 325), (490, imshape[0]), (imshape[1], imshape[0])]], dtype=np.int32)
+    left_vertices = np.array([[(0, imshape[0]), (400, 330), (470, 330), (470, imshape[0])]], dtype=np.int32)
+    right_vertices = np.array([[(490, imshape[0]), (490, 330), (510, 330), (imshape[1], imshape[0])]], dtype=np.int32)
     left_masked_edges = region_of_interest(image, left_vertices)
     right_masked_edges = region_of_interest(image, right_vertices)
     plt.imshow(left_masked_edges, cmap='gray')
@@ -217,8 +229,8 @@ def process_image(image):
     mask = np.zeros_like(image)
 
     # Seperate left lane and right lane lines
-    left_vertices = np.array([[(0, imshape[0]), (470, 310), (470, imshape[0])]], dtype=np.int32)
-    right_vertices = np.array([[(490, 310), (490, imshape[0]), (imshape[1], imshape[0])]], dtype=np.int32)
+    left_vertices = np.array([[(0, imshape[0]), (400, 330), (470, 330), (470, imshape[0])]], dtype=np.int32)
+    right_vertices = np.array([[(490, imshape[0]), (490, 330), (510, 330), (imshape[1], imshape[0])]], dtype=np.int32)
     left_masked_edges = region_of_interest(image, left_vertices)
     right_masked_edges = region_of_interest(image, right_vertices)
     # plt.imshow(left_masked_edges, cmap='gray')
@@ -256,7 +268,8 @@ import os
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
 # white_output = 'white.mp4'
-# clip1 = VideoFileClip("solidWhiteRight.mp4")
+# clip1 = VideoFileClip("solidWhiteRight.mp4").subclip(t_start=0)
+# #clip1 = VideoFileClip("solidWhiteRight.mp4").subclip(t_start=8.32)
 # white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
 # white_clip.write_videofile(white_output, audio=False)
 yellow_output = 'yellow.mp4'
