@@ -40,6 +40,55 @@ def load_steering():
     return steer_array
     #print(steerings[:100])
 
+def load_steering_coded():
+    nb_classes = 13
+    steering = pd.read_csv('driving_log.csv', header=None, usecols=[3])
+    steering = steering[3].tolist()
+
+    steer_code = []
+    for s in steering:
+      code = 0
+      if s < -0.45:
+        code = 0
+      elif s < -0.35:
+        code = 0
+      elif s < -0.25:
+        code = 1
+      elif s < -0.175:
+        code = 2
+      elif s < -0.125:
+        code = 3
+      elif s < -0.075:
+        code = 4
+      elif s < -0.025:
+        code = 5
+      elif s < 0.025:
+        code = 6
+      elif s < 0.075:
+        code = 7
+      elif s < 0.125:
+        code = 8
+      elif s < 0.175:
+        code = 9
+      elif s < 0.25:
+        code = 10
+      elif s < 0.35:
+        code = 11
+      else:
+        code = 12
+      steer_code.append(code)
+
+    #steerings.extend(steering)
+    #print(steerings)
+    steer_array = np.asarray(steer_code)
+    np.savetxt('steer_code.txt', steer_code, fmt='%d')
+    print(steer_array.shape)
+    steer_array = np_utils.to_categorical(steer_array, nb_classes)
+    valid_code = steer_array.argmax(1)
+    np.savetxt('valid_code.txt', valid_code, fmt='%d')
+    return steer_array
+    #print(steerings[:100])
+
 def load_steering_three():
     steering = pd.read_csv('driving_log.csv', header=None, usecols=[3])
     steering = steering[3].tolist()
@@ -109,6 +158,115 @@ def load_data():
     immatrix = np.asarray(images, dtype=np.uint8)
     print(immatrix.shape)
     return immatrix
+
+def load_data_trim():
+    #img_path = 'test'
+    img_path = 'IMG'
+    imglist = os.listdir(img_path)
+    list.sort(imglist)
+
+    with open('img_files.txt', 'w') as fp:
+        for s in imglist:
+            fp.write("%s\n" % s)
+    # create matrix to store all flattened images
+    # immatrix = array([array(Image.open('IMG' + '/' + im)).flatten()
+    #                  for im in imglist], 'f')
+    # import glob
+    # cv_img = []
+    # for img in glob.glob("Path/to/dir/*.jpg"):
+    #  n = cv2.imread(img)
+    #  cv_img.append(n)
+    images = []
+    for imgfile in imglist:
+        img = Image.open(img_path + '/' + imgfile)
+        #img = load_img(img_path + '/' + imgfile)
+        #img = img_to_array(img)
+        #images.append(img)
+        # gray = img.convert('L')
+        npimg = np.array(img)
+        npimg = npimg[70:, :, :]
+        images.append(npimg)
+
+    immatrix = np.asarray(images, dtype=np.uint8)
+    print(immatrix.shape)
+    return immatrix
+
+def load_data_single():
+    #img_path = 'test'
+    img_path = 'IMG'
+    imglist = os.listdir(img_path)
+    list.sort(imglist)
+
+    with open('img_files.txt', 'w') as fp:
+        fp.write("%s\n" % imglist[0])
+    # create matrix to store all flattened images
+    # immatrix = array([array(Image.open('IMG' + '/' + im)).flatten()
+    #                  for im in imglist], 'f')
+    # import glob
+    # cv_img = []
+    # for img in glob.glob("Path/to/dir/*.jpg"):
+    #  n = cv2.imread(img)
+    #  cv_img.append(n)
+
+    print(imglist[0])
+    img = Image.open(img_path + '/' + imglist[0])
+    images = np.array(img)
+
+    immatrix = np.asarray(images, dtype=np.uint8)
+
+    # convert numpy array data back to png image
+    img = Image.fromarray(immatrix, 'RGB')
+    img.save('train0.png')
+
+    transformed_image_array = immatrix[None, :, :, :]
+    print(immatrix.shape)
+    print(transformed_image_array.shape)
+    return transformed_image_array
+
+def load_data_single_trim():
+    #img_path = 'test'
+    img_path = 'IMG'
+    imglist = os.listdir(img_path)
+    list.sort(imglist)
+
+    with open('img_files.txt', 'w') as fp:
+        fp.write("%s\n" % imglist[0])
+    # create matrix to store all flattened images
+    # immatrix = array([array(Image.open('IMG' + '/' + im)).flatten()
+    #                  for im in imglist], 'f')
+    # import glob
+    # cv_img = []
+    # for img in glob.glob("Path/to/dir/*.jpg"):
+    #  n = cv2.imread(img)
+    #  cv_img.append(n)
+
+    print(imglist[0])
+    img = Image.open(img_path + '/' + imglist[0])
+    images = np.array(img)
+    images = images[70:,:,:]
+
+    immatrix = np.asarray(images, dtype=np.uint8)
+
+    # convert numpy array data back to png image
+    img = Image.fromarray(immatrix, 'RGB')
+    img.save('train0.png')
+
+    transformed_image_array = immatrix[None, :, :, :]
+    print(immatrix.shape)
+    print(transformed_image_array.shape)
+    return transformed_image_array
+
+def load_data_single_drive():
+    # img = Image.open('validation0.png')
+    img = Image.open('drive_o0.png')
+    images = np.array(img)
+
+    immatrix = np.asarray(images, dtype=np.uint8)
+
+    transformed_image_array = immatrix[None, :, :, :]
+    print(immatrix.shape)
+    print(transformed_image_array.shape)
+    return transformed_image_array
 
 def save_pickle(train_features, train_labels):
     # Save the data for easy access
@@ -184,6 +342,40 @@ def get_model_new(time_len=1):
 
     return model
 
+def test_data():
+    #y_train = load_steering_speed()
+    y_train = load_steering_coded()
+    np.savetxt("steering.txt", y_train, delimiter=",")
+    print("labels txt saved")
+    x_train = load_data_trim()
+
+    print("Starting model weights and configuration file.")
+
+    result_train = model.predict(x_train, batch_size=64, verbose=1)
+    print("Finished model weights and configuration file.")
+    result_code = result_train.argmax(1)
+    print("convert to int")
+    # result_code_int = result_code.view('int')
+    # result_code_int[:] = result_code
+    # result_code_int = result_code.astype(np.int32)
+
+    np.savetxt("result_code.txt", result_code, fmt='%d', delimiter=",")
+
+def test_data_single():
+    #y_train = load_steering_speed()
+    y_train = load_steering()
+    # x_train = load_data_single()
+    x_train = load_data_single_trim()
+
+    print("Starting model weights and configuration file.")
+
+    result_train = model.predict(x_train, batch_size=1, verbose=1)
+    print(float(result_train))
+    print("Finished model weights and configuration file.")
+
+    np.savetxt("steering.txt", y_train, delimiter=",")
+    np.savetxt("result.txt", result_train, delimiter=",")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Remote Driving')
     parser.add_argument('model', type=str,
@@ -196,14 +388,4 @@ if __name__ == "__main__":
     weights_file = args.model.replace('json', 'h5')
     model.load_weights(weights_file)
 
-    #y_train = load_steering_speed()
-    y_train = load_steering()
-    x_train = load_data()
-
-    print("Starting model weights and configuration file.")
-
-    result_train = model.predict(x_train, batch_size=64, verbose=1)
-    print("Finished model weights and configuration file.")
-
-    np.savetxt("steering.txt", y_train, delimiter=",")
-    np.savetxt("result.txt", result_train, delimiter=",")
+    test_data()
