@@ -89,6 +89,20 @@ def load_steering_coded():
     return steer_array
     #print(steerings[:100])
 
+def load_steering_three_recovery():
+    steering = pd.read_csv('driving_log.csv', header=None, usecols=[3])
+    steering = steering[3].tolist()
+    steerings = []
+    steerings.extend(steering)
+    steerings.extend(steering-0.1)
+    steerings.extend(steering+0.1)
+    #steerings.extend(steering)
+    #print(steerings)
+    steer_array = np.asarray(steerings)
+    print(steer_array.shape)
+    return steer_array
+    #print(steerings[:100])
+
 def load_steering_three():
     steering = pd.read_csv('driving_log.csv', header=None, usecols=[3])
     steering = steering[3].tolist()
@@ -154,6 +168,62 @@ def load_data():
         #images.append(img)
         # gray = img.convert('L')
         images.append(np.array(img))
+
+    immatrix = np.asarray(images, dtype=np.uint8)
+    print(immatrix.shape)
+    return immatrix
+
+def load_data_trim_recovery():
+    #img_path = 'test'
+    img_path = 'IMG/Center'
+    imglist = os.listdir(img_path)
+    list.sort(imglist)
+
+    with open('img_files.txt', 'w') as fp:
+        for s in imglist:
+            fp.write("%s\n" % s)
+    # create matrix to store all flattened images
+    # immatrix = array([array(Image.open('IMG' + '/' + im)).flatten()
+    #                  for im in imglist], 'f')
+    # import glob
+    # cv_img = []
+    # for img in glob.glob("Path/to/dir/*.jpg"):
+    #  n = cv2.imread(img)
+    #  cv_img.append(n)
+    images = []
+    for imgfile in imglist:
+        img = Image.open(img_path + '/' + imgfile)
+        #img = load_img(img_path + '/' + imgfile)
+        #img = img_to_array(img)
+        #images.append(img)
+        # gray = img.convert('L')
+        npimg = np.array(img)
+        npimg = npimg[70:129, :, :]
+        images.append(npimg)
+
+    imglist_left = os.listdir('IMG/Left')
+    list.sort(imglist_left)
+    for imgfile in imglist_left:
+        img = Image.open(img_path + '/' + imgfile)
+        #img = load_img(img_path + '/' + imgfile)
+        #img = img_to_array(img)
+        #images.append(img)
+        # gray = img.convert('L')
+        npimg = np.array(img)
+        npimg = npimg[70:129, :, :]
+        images.append(npimg)
+
+    imglist_right = os.listdir('IMG/Right')
+    list.sort(imglist_right)
+    for imgfile in imglist_right:
+        img = Image.open(img_path + '/' + imgfile)
+        #img = load_img(img_path + '/' + imgfile)
+        #img = img_to_array(img)
+        #images.append(img)
+        # gray = img.convert('L')
+        npimg = np.array(img)
+        npimg = npimg[70:129, :, :]
+        images.append(npimg)
 
     immatrix = np.asarray(images, dtype=np.uint8)
     print(immatrix.shape)
