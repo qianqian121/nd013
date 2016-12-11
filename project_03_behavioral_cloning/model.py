@@ -473,6 +473,52 @@ def get_model_new(time_len=1):
 
     return model
 
+def get_img_name(imglist):
+    # print(imglist)
+    imgnames = []
+    for p in imglist:
+        # print(p)
+        index = p.rfind('/')
+        # print(index)
+        # print(p[index:])
+        imgnames.append(p[index+1:])
+    return imgnames
+
+def test_gen():
+    # img_log = pd.read_csv('driving_log.csv',header=None, dtype={0:str}, usecols=[0])
+    # img_log = pd.read_csv('driving_log.csv', header=None, dtype=object, usecols=[0,1,2])
+    driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[0,1,2,3, 6])
+    center = driving_log[0].astype(str).tolist()
+    center = get_img_name(center)
+    left = driving_log[1].astype(str).tolist()
+    left = get_img_name(left)
+    right = driving_log[2].astype(str).tolist()
+    right = get_img_name(right)
+    steering = driving_log[3].tolist()
+    speed = driving_log[6].tolist()
+    imglist = []
+    for i in range(len(steering)):
+        tup = (center[i], steering[i], 'c')
+        imglist.append(tup)
+        tup = (left[i], steering[i]-0.1, 'l')
+        imglist.append(tup)
+        tup = (right[i], steering[i]+0.1, 'r')
+        imglist.append(tup)
+    # print(imglist)
+    return imglist
+
+def data_gen(imglist):
+    imgpath = 'IMG'
+    for tup in imglist:
+        # print(tup)
+        img = Image.open(imgpath + '/' + tup[0])
+        image_array = np.array(img)
+        transformed_image_array = image_array[None, 70:130, :, :]
+        # yield _x_train, _y_train
+        angle = np.array([tup[1]])
+        # print(angle.shape)
+        yield transformed_image_array, angle
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Steering angle model trainer')
     parser.add_argument('--host', type=str, default="localhost", help='Data server ip address.')
@@ -488,28 +534,36 @@ if __name__ == "__main__":
 
     print(args.epoch)
 
-    y_train = load_steering_three_recovery()
-    # y_train = load_steering()
-    x_train = load_data_trim_recovery()
-    #y_train = y_train[:4]
-    #save_pickle(x_data, y_data)
-    # x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=0.25, random_state=0)
-    # x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=0.25)
-    print(x_train.shape, y_train.shape)
+    if False:
+        y_train = load_steering_three_recovery()
+        # y_train = load_steering()
+        x_train = load_data_trim_recovery()
+        #y_train = y_train[:4]
+        #save_pickle(x_data, y_data)
+        # x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=0.25, random_state=0)
+        # x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=0.25)
+        print(x_train.shape, y_train.shape)
     # print(x_valid.shape, y_valid.shape)
     print("Starting model weights and configuration file.")
 
     model = get_model()
-    history = model.fit(
-        x_train,
-        y_train,
-        batch_size=64,
+    history = model.fit_generator(
+        data_gen(test_gen()),
+        samples_per_epoch=100000,
         nb_epoch=args.epoch,
-        verbose=1,
-        # validation_split=0.1,
-        # validation_data=(x_valid, y_valid),
-        shuffle=True
+        # validation_data=gen(20, args.host, port=args.val_port),
+        # nb_val_samples=1000   #validation sample size
     )
+    # history = model.fit(
+    #     x_train,
+    #     y_train,
+    #     batch_size=64,
+    #     nb_epoch=args.epoch,
+    #     verbose=1,
+    #     # validation_split=0.1,
+    #     # validation_data=(x_valid, y_valid),
+    #     shuffle=True
+    # )
     print(history.history.keys())
     print("Saving model weights and configuration file.")
 
