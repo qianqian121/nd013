@@ -194,7 +194,7 @@ def load_data():
     print(immatrix.shape)
     return immatrix
 
-def load_data_trim_recovery():
+def load_data_trim_recovery_nvidia():
     #img_path = 'test'
     img_path = 'IMG/Center'
     imglist = os.listdir(img_path)
@@ -214,43 +214,48 @@ def load_data_trim_recovery():
     images = []
     for imgfile in imglist:
         img = Image.open(img_path + '/' + imgfile)
+        img = img.resize((200, 160), Image.ANTIALIAS)
         #img = load_img(img_path + '/' + imgfile)
         #img = img_to_array(img)
         #images.append(img)
         # gray = img.convert('L')
         npimg = np.array(img)
-        npimg = npimg[60:140, :, :]
+        # print(npimg.shape)
+        npimg = npimg[0:160, :, :]
+        # print(npimg.shape)
         images.append(npimg)
 
     imglist_left = os.listdir('IMG/Left')
     list.sort(imglist_left)
     for imgfile in imglist_left:
         img = Image.open('IMG/Left' + '/' + imgfile)
+        img = img.resize((200, 160), Image.ANTIALIAS)
         #img = load_img(img_path + '/' + imgfile)
         #img = img_to_array(img)
         #images.append(img)
         # gray = img.convert('L')
         npimg = np.array(img)
-        npimg = npimg[60:140, :, :]
+        npimg = npimg[0:160, :, :]
         images.append(npimg)
 
     imglist_right = os.listdir('IMG/Right')
     list.sort(imglist_right)
     for imgfile in imglist_right:
         img = Image.open('IMG/Right' + '/' + imgfile)
+        img = img.resize((200, 160), Image.ANTIALIAS)
         #img = load_img(img_path + '/' + imgfile)
         #img = img_to_array(img)
         #images.append(img)
         # gray = img.convert('L')
         npimg = np.array(img)
-        npimg = npimg[60:140, :, :]
+        npimg = npimg[0:160, :, :]
         images.append(npimg)
 
     immatrix = np.asarray(images, dtype=np.uint8)
     print(immatrix.shape)
     return immatrix
 
-def load_data_trim_recovery_old():
+def load_data_trim_recovery():
     #img_path = 'test'
     img_path = 'IMG/Center'
     imglist = os.listdir(img_path)
@@ -390,7 +395,7 @@ def get_model_code(time_len=1):
 
 def get_model(time_len=1):
     # ch, row, col = 3, 160, 320  # camera format
-    ch, row, col = 3, 80, 320  # camera format
+    ch, row, col = 3, 60, 320  # camera format
 
     model = Sequential()
     model.add(Lambda(lambda x: x / 127.5 - 1.,
@@ -408,6 +413,34 @@ def get_model(time_len=1):
     model.add(Dropout(.5))
     model.add(ELU())
     model.add(Dense(1))
+
+    # model.compile(optimizer="adam", loss="mse")
+    model.compile(optimizer='adam',
+                  loss='mse',
+                  metrics=['accuracy'])
+
+    return model
+
+# Nvidia
+def get_model_nvidia(time_len=1):
+    # ch, row, col = 3, 160, 320  # camera format
+    ch, row, col = 3, 160, 200  # camera format
+
+    model = Sequential()
+    model.add(Lambda(lambda x: x / 127.5 - 1.,
+                     input_shape=(row, col, ch),
+                     output_shape=(row, col, ch)))
+    model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2, 2)))
+    model.add(Convolution2D(36, 5, 5, border_mode='valid', subsample=(2, 2)))
+    model.add(Convolution2D(48, 5, 5, subsample=(2, 2)))
+    model.add(Convolution2D(64, 3, 3))
+    model.add(Convolution2D(64, 3, 3))
+    model.add(Flatten())
+    model.add(Dense((1164), activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(50))
+    model.add(Dense(10))
+    model.add(Dense(1, name='output'))
 
     # model.compile(optimizer="adam", loss="mse")
     model.compile(optimizer='adam',
@@ -473,7 +506,7 @@ if __name__ == "__main__":
         batch_size=64,
         nb_epoch=args.epoch,
         verbose=1,
-        validation_split=0.1,
+        # validation_split=0.1,
         # validation_data=(x_valid, y_valid),
         shuffle=True
     )
