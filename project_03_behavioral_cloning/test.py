@@ -446,6 +446,35 @@ def test_data_single():
     np.savetxt("steering.txt", y_train, delimiter=",")
     np.savetxt("result.txt", result_train, delimiter=",")
 
+def get_img_name(imglist):
+    imgnames = []
+    for p in imglist:
+        index = p.rfind('\\')
+        imgnames.append(p[index:])
+    return imgnames
+
+def test_gen():
+    imgpath = 'IMG'
+    driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[3, 6])
+    center = driving_log[0].tolist()
+    center = get_img_name(center)
+    left = driving_log[1].tolist()
+    left = get_img_name(left)
+    right = driving_log[2].tolist()
+    right = get_img_name(right)
+    steering = driving_log[3].tolist()
+    speed = driving_log[6].tolist()
+    imglist = []
+    for i in range(len(steering)):
+        tup = (center[i], steering[i], 'c')
+        imglist.append(tup)
+        tup = (left[i], steering[i], 'l')
+        imglist.append(tup)
+        tup = (right[i], steering[i], 'r')
+        imglist.append(tup)
+    print(imglist)
+    return imglist
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Remote Driving')
     parser.add_argument('model', type=str,
@@ -458,4 +487,5 @@ if __name__ == "__main__":
     weights_file = args.model.replace('json', 'h5')
     model.load_weights(weights_file)
 
-    test_data()
+    test_gen()
+    # test_data()
