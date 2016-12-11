@@ -447,20 +447,26 @@ def test_data_single():
     np.savetxt("result.txt", result_train, delimiter=",")
 
 def get_img_name(imglist):
+    # print(imglist)
     imgnames = []
     for p in imglist:
+        # print(p)
         index = p.rfind('\\')
-        imgnames.append(p[index:])
+        # print(index)
+        # print(p[index:])
+        imgnames.append(p[index+1:])
     return imgnames
 
 def test_gen():
     imgpath = 'IMG'
-    driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[3, 6])
-    center = driving_log[0].tolist()
+    # img_log = pd.read_csv('driving_log.csv',header=None, dtype={0:str}, usecols=[0])
+    # img_log = pd.read_csv('driving_log.csv', header=None, dtype=object, usecols=[0,1,2])
+    driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[0,1,2,3, 6])
+    center = driving_log[0].astype(str).tolist()
     center = get_img_name(center)
-    left = driving_log[1].tolist()
+    left = driving_log[1].astype(str).tolist()
     left = get_img_name(left)
-    right = driving_log[2].tolist()
+    right = driving_log[2].astype(str).tolist()
     right = get_img_name(right)
     steering = driving_log[3].tolist()
     speed = driving_log[6].tolist()
@@ -472,7 +478,7 @@ def test_gen():
         imglist.append(tup)
         tup = (right[i], steering[i], 'r')
         imglist.append(tup)
-    print(imglist)
+    # print(imglist)
     return imglist
 
 if __name__ == "__main__":
