@@ -507,17 +507,28 @@ def test_gen():
     # print(imglist)
     return imglist
 
-def data_gen(imglist):
+import random
+
+def data_gen(imglist, batchsize):
     imgpath = 'IMG'
-    for tup in imglist:
-        # print(tup)
-        img = Image.open(imgpath + '/' + tup[0])
-        image_array = np.array(img)
-        transformed_image_array = image_array[None, 70:130, :, :]
-        # yield _x_train, _y_train
-        angle = np.array([tup[1]])
-        # print(angle.shape)
-        yield transformed_image_array, angle
+    batch = 0
+    while 1:
+        random.shuffle(imglist)
+        # print(imglist)
+        for tup in imglist:
+            # print(tup)
+            img = Image.open(imgpath + '/' + tup[0])
+            image_array = np.array(img)
+            transformed_image_array = image_array[None, 70:130, :, :]
+            # yield _x_train, _y_train
+            angle = np.array([tup[1]])
+            # print(angle.shape)
+            batch += 1
+            if (batch % batchsize) == 0:
+                # print('...batch...')
+                # print(batch)
+                # batch = 0
+                yield transformed_image_array, angle
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Steering angle model trainer')
@@ -548,11 +559,13 @@ if __name__ == "__main__":
 
     model = get_model()
     history = model.fit_generator(
-        data_gen(test_gen()),
-        samples_per_epoch=100000,
+        data_gen(test_gen(), 64),
+        samples_per_epoch=1600,
+        # samples_per_epoch=100000,
         nb_epoch=args.epoch,
         # validation_data=gen(20, args.host, port=args.val_port),
         # nb_val_samples=1000   #validation sample size
+        max_q_size=100
     )
     # history = model.fit(
     #     x_train,
