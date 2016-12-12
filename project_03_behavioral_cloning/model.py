@@ -394,8 +394,10 @@ def get_model_code(time_len=1):
     return model
 
 def get_model(time_len=1):
-    # ch, row, col = 3, 160, 320  # camera format
+# def get_model_comma_ai(time_len=1):
+#     ch, row, col = 3, 80, 320  # camera format
     ch, row, col = 3, 60, 320  # camera format
+    # ch, row, col = 3, 160, 320  # camera format
 
     model = Sequential()
     model.add(Lambda(lambda x: x / 127.5 - 1.,
@@ -421,10 +423,41 @@ def get_model(time_len=1):
 
     return model
 
-# Nvidia
-def get_model_nvidia(time_len=1):
+def get_model_opt(time_len=1):
+# def get_model_comma_ai(time_len=1):
+#     ch, row, col = 3, 80, 320  # camera format
+    ch, row, col = 3, 60, 320  # camera format
     # ch, row, col = 3, 160, 320  # camera format
-    ch, row, col = 3, 160, 200  # camera format
+
+    model = Sequential()
+    model.add(Lambda(lambda x: x / 127.5 - 1.,
+                     input_shape=(row, col, ch),
+                     output_shape=(row, col, ch)))
+    model.add(Convolution2D(16, 5, 5, subsample=(2, 2), border_mode="same"))
+    model.add(ELU())
+    model.add(Convolution2D(32, 5, 5, subsample=(2, 2), border_mode="same"))
+    model.add(ELU())
+    model.add(Convolution2D(64, 3, 3, border_mode="same"))
+    model.add(Flatten())
+    model.add(Dropout(.2))
+    model.add(ELU())
+    model.add(Dense(512))
+    model.add(Dropout(.5))
+    model.add(ELU())
+    model.add(Dense(1))
+
+    # model.compile(optimizer="adam", loss="mse")
+    model.compile(optimizer='adam',
+                  loss='mse',
+                  metrics=['accuracy'])
+
+    return model
+
+# Nvidia
+# def get_model(time_len=1):
+def get_model_nvidia(time_len=1):
+    ch, row, col = 3, 160, 320  # camera format
+    # ch, row, col = 3, 160, 200  # camera format
 
     model = Sequential()
     model.add(Lambda(lambda x: x / 127.5 - 1.,
@@ -484,7 +517,7 @@ def get_img_name(imglist):
         imgnames.append(p[index+1:])
     return imgnames
 
-def test_gen():
+def test_gen_old():
     # img_log = pd.read_csv('driving_log.csv',header=None, dtype={0:str}, usecols=[0])
     # img_log = pd.read_csv('driving_log.csv', header=None, dtype=object, usecols=[0,1,2])
     driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[0,1,2,3, 6])
@@ -507,7 +540,56 @@ def test_gen():
     # print(imglist)
     return imglist
 
+def test_gen():
+    # img_log = pd.read_csv('driving_log.csv',header=None, dtype={0:str}, usecols=[0])
+    # img_log = pd.read_csv('driving_log.csv', header=None, dtype=object, usecols=[0,1,2])
+    driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[0,1,2,3, 6])
+    center = driving_log[0].astype(str).tolist()
+    center = get_img_name(center)
+    left = driving_log[1].astype(str).tolist()
+    left = get_img_name(left)
+    right = driving_log[2].astype(str).tolist()
+    right = get_img_name(right)
+    steering = driving_log[3].tolist()
+    speed = driving_log[6].tolist()
+    imglist = []
+    for i in range(len(steering)):
+        tup = (center[i], steering[i], 'c')
+        imglist.append(tup)
+        tup = (center[i], -steering[i], 'm')
+        imglist.append(tup)
+        tup = (left[i], steering[i]-0.1, 'l')
+        imglist.append(tup)
+        tup = (right[i], steering[i]+0.2, 'r')
+        imglist.append(tup)
+    # print(imglist)
+    return imglist
+
 import random
+SEED = 323
+
+def data_gen_old(imglist, batchsize):
+    imgpath = 'IMG'
+    batch = 0
+    while 1:
+        random.shuffle(imglist)
+        # print(imglist)
+        for tup in imglist:
+            # print(tup)
+            img = Image.open(imgpath + '/' + tup[0])
+            image_array = np.array(img)
+            # transformed_image_array = image_array[None, :, :, :]
+            transformed_image_array = image_array[None, 70:130, :, :]
+            # transformed_image_array = image_array[None, 60:140, :, :]
+            # yield _x_train, _y_train
+            angle = np.array([tup[1]])
+            # print(angle.shape)
+            batch += 1
+            if (batch % batchsize) == 0:
+                # print('...batch...')
+                # print(batch)
+                # batch = 0
+                yield transformed_image_array, angle
 
 def data_gen(imglist, batchsize):
     imgpath = 'IMG'
@@ -518,10 +600,24 @@ def data_gen(imglist, batchsize):
         for tup in imglist:
             # print(tup)
             img = Image.open(imgpath + '/' + tup[0])
-            image_array = np.array(img)
-            transformed_image_array = image_array[None, 70:130, :, :]
-            # yield _x_train, _y_train
+            # print(imgpath + '/' + tup[0])
+            # img.load()
+            # img = img.getdata()
+            # print(img)
             angle = np.array([tup[1]])
+            if (tup[2] == 't'):
+                # img.save('center0.png')
+                img = ImageOps.mirror(img)
+                # img.save('mirro0.png')
+            image_array = np.array(img)
+            # print(image_array)
+            # print(image_array.shape)
+
+            # transformed_image_array = image_array[None, :, :, :]
+            transformed_image_array = image_array[None, 70:130, :, :]
+            # transformed_image_array = image_array[None, 60:140, :, :]
+            # yield _x_train, _y_train
+
             # print(angle.shape)
             batch += 1
             if (batch % batchsize) == 0:
@@ -559,8 +655,11 @@ if __name__ == "__main__":
 
     model = get_model()
     history = model.fit_generator(
+        # data_gen(test_gen(), 1),
+        # samples_per_epoch=1,
         data_gen(test_gen(), 64),
-        samples_per_epoch=1600,
+        # samples_per_epoch=2048,
+        samples_per_epoch=512,
         # samples_per_epoch=100000,
         nb_epoch=args.epoch,
         # validation_data=gen(20, args.host, port=args.val_port),
