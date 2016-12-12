@@ -605,7 +605,7 @@ def data_gen(imglist, batchsize):
             # img = img.getdata()
             # print(img)
             angle = np.array([tup[1]])
-            if (tup[2] == 't'):
+            if (tup[2] == 'm'):
                 # img.save('center0.png')
                 img = ImageOps.mirror(img)
                 # img.save('mirro0.png')
