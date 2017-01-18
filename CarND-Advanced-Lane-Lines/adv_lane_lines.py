@@ -348,6 +348,8 @@ def combine_thresh_strict(img, sobel_kernel=3, mag_thresh=(0, 255)):
 ksize = 9 # Choose a larger odd number to smooth gradient measurements
 
 img = cv2.imread('test_images/test2.jpg')
+img = cv2.imread('frame_challenge.png')
+img = cv2.imread('frame.png')
 img = cv2.undistort(img, mtx, dist, None, mtx)
 combine_binary = combine_thresh(img, sobel_kernel=ksize, mag_thresh=(150, 255))
 combine_binary_strict = combine_thresh_strict(img, sobel_kernel=ksize, mag_thresh=(150, 255))
@@ -356,7 +358,8 @@ plt.show()
 
 image = mpimg.imread('test_images/test3.jpg')
 image = mpimg.imread('test_images/test2.jpg')
-
+image = mpimg.imread('frame_challenge.png')
+image = mpimg.imread('frame.png')
 
 # Apply each of the thresholding functions
 gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(25, 255))
