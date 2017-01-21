@@ -274,19 +274,19 @@ def combine_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
     abs_sobel = np.absolute(sobelx)
     scaled_sobel = np.uint8(255 * abs_sobel / np.max(abs_sobel))
     print(scaled_sobel.shape)
-    plt.imshow(scaled_sobel, cmap='gray')
-    plt.show()
+    # plt.imshow(scaled_sobel, cmap='gray')
+    # plt.show()
 
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
     S = hls[:,:,2]
-    plt.imshow(S, cmap='gray')
-    plt.show()
+    # plt.imshow(S, cmap='gray')
+    # plt.show()
     thresh = mag_thresh
     s_binary = np.zeros_like(S)
     s_binary[(S > thresh[0]) & (S <= thresh[1])] = 1
 
-    plt.imshow(s_binary, cmap='gray')
-    plt.show()
+    # plt.imshow(s_binary, cmap='gray')
+    # plt.show()
 
     # Threshold x gradient
     # retval, sxbinary = cv2.threshold(scaled_sobel, 15, 250, cv2.THRESH_BINARY)
@@ -294,8 +294,8 @@ def combine_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
     sxbinary = np.zeros_like(scaled_sobel)
     sxbinary[(scaled_sobel > thresh[0]) & (scaled_sobel <= thresh[1])] = 1
 
-    plt.imshow(sxbinary, cmap='gray')
-    plt.show()
+    # plt.imshow(sxbinary, cmap='gray')
+    # plt.show()
 
     # Combine the two binary thresholds
     combined_binary = np.zeros_like(sxbinary)
@@ -313,19 +313,19 @@ def combine_thresh_strict(img, sobel_kernel=3, mag_thresh=(0, 255)):
     abs_sobel = np.absolute(sobelx)
     scaled_sobel = np.uint8(255 * abs_sobel / np.max(abs_sobel))
     print(scaled_sobel.shape)
-    plt.imshow(scaled_sobel, cmap='gray')
-    plt.show()
+    # plt.imshow(scaled_sobel, cmap='gray')
+    # plt.show()
 
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
     S = hls[:,:,2]
-    plt.imshow(S, cmap='gray')
-    plt.show()
+    # plt.imshow(S, cmap='gray')
+    # plt.show()
     thresh = mag_thresh
     s_binary = np.zeros_like(S)
     s_binary[(S > thresh[0]) & (S <= thresh[1])] = 1
 
-    plt.imshow(s_binary, cmap='gray')
-    plt.show()
+    # plt.imshow(s_binary, cmap='gray')
+    # plt.show()
 
     # Threshold x gradient
     # retval, sxbinary = cv2.threshold(scaled_sobel, 15, 250, cv2.THRESH_BINARY)
@@ -333,8 +333,8 @@ def combine_thresh_strict(img, sobel_kernel=3, mag_thresh=(0, 255)):
     sxbinary = np.zeros_like(scaled_sobel)
     sxbinary[(scaled_sobel > thresh[0]) & (scaled_sobel <= thresh[1])] = 1
 
-    plt.imshow(sxbinary, cmap='gray')
-    plt.show()
+    # plt.imshow(sxbinary, cmap='gray')
+    # plt.show()
 
     # Combine the two binary thresholds
     combined_binary = np.zeros_like(sxbinary)
@@ -356,67 +356,69 @@ combine_binary_strict = combine_thresh_strict(img, sobel_kernel=ksize, mag_thres
 plt.imshow(combine_binary, cmap='gray')
 plt.show()
 
+
 image = mpimg.imread('test_images/test3.jpg')
 image = mpimg.imread('test_images/test2.jpg')
 image = mpimg.imread('frame_challenge.png')
 image = mpimg.imread('frame.png')
+if False:
+    # Apply each of the thresholding functions
+    gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(25, 255))
+    grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(25, 255))
+    mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(25, 255))
+    dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1.2))
 
-# Apply each of the thresholding functions
-gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(25, 255))
-grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(25, 255))
-mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(25, 255))
-dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1.2))
 
+    # Plot the result
+    # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
 
-# Plot the result
-# f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
-f.tight_layout()
-ax1.imshow(image)
-ax1.set_title('Original Image', fontsize=50)
-ax2.imshow(gradx, cmap='gray')
-ax2.set_title('gradx', fontsize=15)
-ax3.imshow(grady, cmap='gray')
-ax3.set_title('grady', fontsize=15)
-ax4.imshow(mag_binary, cmap='gray')
-ax4.set_title('Magnitude', fontsize=15)
-ax5.imshow(dir_binary, cmap='gray')
-ax5.set_title('directional', fontsize=15)
-ax6.imshow(mag_binary, cmap='gray')
-ax6.set_title('Thresholded Gradient', fontsize=15)
-# plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-plt.show()
+    f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
+    f.tight_layout()
+    ax1.imshow(image)
+    ax1.set_title('Original Image', fontsize=50)
+    ax2.imshow(gradx, cmap='gray')
+    ax2.set_title('gradx', fontsize=15)
+    ax3.imshow(grady, cmap='gray')
+    ax3.set_title('grady', fontsize=15)
+    ax4.imshow(mag_binary, cmap='gray')
+    ax4.set_title('Magnitude', fontsize=15)
+    ax5.imshow(dir_binary, cmap='gray')
+    ax5.set_title('directional', fontsize=15)
+    ax6.imshow(mag_binary, cmap='gray')
+    ax6.set_title('Thresholded Gradient', fontsize=15)
+    # plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    plt.show()
 
-hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
-H = hls[:,:,0]
-L = hls[:,:,1]
-S = hls[:,:,2]
+    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    H = hls[:,:,0]
+    L = hls[:,:,1]
+    S = hls[:,:,2]
 
-thresh = (105, 255)
-binary_S = np.zeros_like(S)
-binary_S[(S > thresh[0]) & (S <= thresh[1])] = 1
+    thresh = (105, 255)
+    binary_S = np.zeros_like(S)
+    binary_S[(S > thresh[0]) & (S <= thresh[1])] = 1
 
-thresh = (1, 90)
-binary_H = np.zeros_like(S)
-binary_H[(H > thresh[0]) & (H <= thresh[1])] = 1
-# Lzero = np.zeros_like(L)
-# hs = np.vstack(H, Lzero, S)
-f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
-f.tight_layout()
-ax1.imshow(image)
-ax1.set_title('Original Image', fontsize=50)
-ax2.imshow(H, cmap='gray')
-ax2.set_title('H', fontsize=15)
-ax3.imshow(L, cmap='gray')
-ax3.set_title('L', fontsize=15)
-ax4.imshow(S, cmap='gray')
-ax4.set_title('S', fontsize=15)
-ax5.imshow(binary_S, cmap='gray')
-ax5.set_title('binary_S', fontsize=15)
-ax6.imshow(binary_H, cmap='gray')
-ax6.set_title('binary_H', fontsize=15)
-# plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-plt.show()
+    thresh = (1, 90)
+    binary_H = np.zeros_like(S)
+    binary_H[(H > thresh[0]) & (H <= thresh[1])] = 1
+    # Lzero = np.zeros_like(L)
+    # hs = np.vstack(H, Lzero, S)
+    f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
+    f.tight_layout()
+    ax1.imshow(image)
+    ax1.set_title('Original Image', fontsize=50)
+    ax2.imshow(H, cmap='gray')
+    ax2.set_title('H', fontsize=15)
+    ax3.imshow(L, cmap='gray')
+    ax3.set_title('L', fontsize=15)
+    ax4.imshow(S, cmap='gray')
+    ax4.set_title('S', fontsize=15)
+    ax5.imshow(binary_S, cmap='gray')
+    ax5.set_title('binary_S', fontsize=15)
+    ax6.imshow(binary_H, cmap='gray')
+    ax6.set_title('binary_H', fontsize=15)
+    # plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    plt.show()
 
 # ax1 = plt.subplot(511)
 # ax1.imshow(image)
@@ -446,7 +448,7 @@ if False:
 def unwarp(img):
     # Pass in your image into this function
 
-    plt.imshow(img)
+    # plt.imshow(img)
         # b) define 4 source points src = np.float32([[,],[,],[,],[,]])
              #Note: you could pick any four of the detected corners
              # as long as those four corners define a rectangle
@@ -487,22 +489,23 @@ def unwarp(img):
 # Apply a perspective transform to rectify binary image ("birds-eye view").
 img = mpimg.imread('straight_line_corner.png')
 top_down_img, perspective_M, Minv = unwarp(img)
-f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-f.tight_layout()
-ax1.imshow(img)
-ax1.set_title('Original Image', fontsize=50)
-ax2.imshow(top_down_img)
-ax2.set_title('Undistorted and Warped Image', fontsize=50)
-plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-plt.show()
+if False:
+    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+    f.tight_layout()
+    ax1.imshow(img)
+    ax1.set_title('Original Image', fontsize=50)
+    ax2.imshow(top_down_img)
+    ax2.set_title('Undistorted and Warped Image', fontsize=50)
+    plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    plt.show()
 
 
 
 
 
 # top_down_img = cv2.warpPerspective(mag_binary, perspective_M, (image.shape[1], image.shape[0]), flags=cv2.INTER_LINEAR)
-top_down_img = cv2.warpPerspective(combine_binary, perspective_M, (image.shape[1], image.shape[0]), flags=cv2.INTER_LINEAR)
-top_down_img_strict = cv2.warpPerspective(combine_binary_strict, perspective_M, (image.shape[1], image.shape[0]), flags=cv2.INTER_LINEAR)
+top_down_img = cv2.warpPerspective(combine_binary, perspective_M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+top_down_img_strict = cv2.warpPerspective(combine_binary_strict, perspective_M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
 # warped = cv2.cvtColor(top_down_img, cv2.COLOR_RGB2GRAY)
 # Plot the result
 f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
@@ -531,7 +534,8 @@ def find_lines(histogram):
     in_segment = False
     seg_max = 0
     lines = []
-    for i in range(len(histogram)):
+    # for i in range(len(histogram)):
+    for i in range(550,750):
         if in_segment is True:
             if (histogram[i] <= 0):
                 in_segment = False
@@ -629,98 +633,140 @@ def merge_segs(lines, lines_strict):
     return merged_lines
 
 lines = find_lines(histogram)
-lines_strict = find_lines_strict(histogram_strict)
+# lines_strict = find_lines_strict(histogram_strict)
 lines = concat_segs(lines, histogram)
-lines_strict = concat_segs(lines_strict, histogram_strict)
-lines_merged = merge_segs(lines, lines_strict)
+# lines_strict = concat_segs(lines_strict, histogram_strict)
+# lines_merged = merge_segs(lines, lines_strict)
 
 def find_lines_pixel(img, top_down_img, top_down_img_strict):
+    plt.imshow(top_down_img, cmap='gray')
+    plt.show()
     # print(histogram[590:630])
     height = img.shape[0]
+    width = img.shape[1]
     window_num = 10
     window_size = int(height / window_num)
     histo_window = int(height / 2)
+    left = []
+    right = []
     for i in range(height - 1, histo_window, -window_size):
         img = top_down_img
-        histogram = np.sum(img[histo_window - i : height - i, :], axis=0)
-        img = top_down_img_strict
-        histogram_strict = np.sum(img[histo_window - i : height - i, :], axis=0)
+        histogram = np.sum(img[i - histo_window : i, :], axis=0)
+        histo_img = np.copy(img[i - histo_window: i, :])
+        histogram = np.array(histogram)
+        # print(histogram.shape)
+        # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+        # f.tight_layout()
+        # ax1.imshow(histo_img, cmap='gray')
+        # ax1.set_title('Original Image', fontsize=50)
+        # ax2.plot(histogram)
+        # # plt.plot(histogram)
+        # plt.show()
+        # # img = top_down_img_strict
+        # # histogram_strict = np.sum(img[i - histo_window : i, :], axis=0)
+        # # histo_img = np.copy(img[i - histo_window: i, :])
+        # # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+        # # f.tight_layout()
+        # # ax1.imshow(histo_img, cmap='gray')
+        # # ax1.set_title('Original Image', fontsize=50)
+        # # ax2.plot(histogram_strict)
+        # # # plt.plot(histogram)
+        # # plt.show()
         lines = find_lines(histogram)
-        lines_strict = find_lines_strict(histogram_strict)
-        lines = concat_segs(lines, histogram)
-        lines_strict = concat_segs(lines_strict, histogram_strict)
-        lines_merged = merge_segs(lines, lines_strict)
-        start = lines_merged[0]
-        end = lines_merged[2]
-        left_line_image = np.copy(img[height  - i - i : height - i, :])
+        # lines_strict = find_lines_strict(histogram_strict)
+        # lines = concat_segs(lines, histogram)
+        # lines_strict = concat_segs(lines_strict, histogram_strict)
+        # lines_merged = merge_segs(lines, lines_strict)
+        start = lines[0]
+        end = -lines[2]
+        left_line_image = np.copy(img[i - window_size : i, :])
+        right_line_image = np.copy(img[i - window_size: i, :])
         left_line_image[:, 0:start] = 0
         left_line_image[:, end:width] = 0
-        leftx = []
-        for j in range(height  - i - i, height - i):
-            for k in (start, end):
-                if left_line_image[j][k] == 1:
-                    leftx.append([j,k])
-        leftx_array = np.asarray(leftx)
-        print(leftx_array.shape)
-    # for i in range(height / 2 - 1, -1, -window_size):
 
+        startr = lines[3]
+        endr = -lines[5]
+
+        right_line_image[:, 0:startr] = 0
+        right_line_image[:, endr:width] = 0
+        # plt.imshow(right_line_image, cmap='gray')
+        # plt.show()
+        for j in range(window_size):
+            for k in range(start, end):
+                if left_line_image[j][k] == 1:
+                    left.append([j + i - window_size,k])
+            for k in range(startr, endr):
+                if right_line_image[j][k] == 1:
+                    right.append([j + i - window_size,k])
+    left_array = np.asarray(left)
+    right_array = np.asarray(right)
+        # print(leftx_array.shape)    # for i in range(height / 2 - 1, -1, -window_size):
+
+    return left_array, right_array
     # return binary_output
 
-find_lines_pixel(top_down_img, top_down_img, top_down_img_strict)
+left, right = find_lines_pixel(top_down_img, top_down_img, top_down_img_strict)
 
 
-# Generate some fake data to represent lane-line pixels
-yvals = np.linspace(0, 100, num=101)*7.2  # to cover same y-range as image
-leftx = np.array([200 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
-                              for idx, elem in enumerate(yvals)])
-leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
-rightx = np.array([900 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
-                                for idx, elem in enumerate(yvals)])
-rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
+# # Generate some fake data to represent lane-line pixels
+# yvals = np.linspace(0, 100, num=101)*7.2  # to cover same y-range as image
+# leftx = np.array([200 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
+#                               for idx, elem in enumerate(yvals)])
+# leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
+# rightx = np.array([900 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
+#                                 for idx, elem in enumerate(yvals)])
+# rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
+
+lefty = left[:,0]
+leftx = left[:,1]
+
+righty = right[:,0]
+rightx = right[:,1]
 
 # Fit a second order polynomial to each fake lane line
-left_fit = np.polyfit(yvals, leftx, 2)
-left_fitx = left_fit[0]*yvals**2 + left_fit[1]*yvals + left_fit[2]
-right_fit = np.polyfit(yvals, rightx, 2)
-right_fitx = right_fit[0]*yvals**2 + right_fit[1]*yvals + right_fit[2]
+left_fit = np.polyfit(lefty, leftx, 2)
+left_fitx = left_fit[0]*lefty**2 + left_fit[1]*lefty + left_fit[2]
+right_fit = np.polyfit(righty, rightx, 2)
+right_fitx = right_fit[0]*righty**2 + right_fit[1]*righty + right_fit[2]
 
 # Plot up the fake data
-plt.plot(leftx, yvals, 'o', color='red')
-plt.plot(rightx, yvals, 'o', color='blue')
+plt.plot(leftx, lefty, 'o', color='red')
+plt.plot(rightx, righty, 'o', color='blue')
 plt.xlim(0, 1280)
 plt.ylim(0, 720)
-plt.plot(left_fitx, yvals, color='green', linewidth=3)
-plt.plot(right_fitx, yvals, color='green', linewidth=3)
+plt.plot(left_fitx, lefty, color='green', linewidth=3)
+plt.plot(right_fitx, righty, color='green', linewidth=3)
 plt.gca().invert_yaxis() # to visualize as we do the images
 plt.show()
 
 
 # Define y-value where we want radius of curvature
 # I'll choose the maximum y-value, corresponding to the bottom of the image
-y_eval = np.max(yvals)
+y_eval = np.max(lefty)
 left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) \
                              /np.absolute(2*left_fit[0])
+y_eval = np.max(righty)
 right_curverad = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) \
                                 /np.absolute(2*right_fit[0])
 print(left_curverad, right_curverad)
 # Example values: 1163.9    1213.7
 
 
-
-# Define conversions in x and y from pixels space to meters
-ym_per_pix = 30/720 # meters per pixel in y dimension
-xm_per_pix = 3.7/700 # meteres per pixel in x dimension
-
-left_fit_cr = np.polyfit(yvals*ym_per_pix, leftx*xm_per_pix, 2)
-right_fit_cr = np.polyfit(yvals*ym_per_pix, rightx*xm_per_pix, 2)
-left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
-                             /np.absolute(2*left_fit_cr[0])
-right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
-                                /np.absolute(2*right_fit_cr[0])
-# Now our radius of curvature is in meters
-print(left_curverad, 'm', right_curverad, 'm')
-# Example values: 3380.7 m    3189.3 m
-
+#
+# # Define conversions in x and y from pixels space to meters
+# ym_per_pix = 30/720 # meters per pixel in y dimension
+# xm_per_pix = 3.7/700 # meteres per pixel in x dimension
+#
+# left_fit_cr = np.polyfit(yvals*ym_per_pix, leftx*xm_per_pix, 2)
+# right_fit_cr = np.polyfit(yvals*ym_per_pix, rightx*xm_per_pix, 2)
+# left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
+#                              /np.absolute(2*left_fit_cr[0])
+# right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
+#                                 /np.absolute(2*right_fit_cr[0])
+# # Now our radius of curvature is in meters
+# print(left_curverad, 'm', right_curverad, 'm')
+# # Example values: 3380.7 m    3189.3 m
+#
 
 
 
@@ -731,13 +777,14 @@ warp_zero = np.zeros_like(warped).astype(np.uint8)
 color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
 
 # Recast the x and y points into usable format for cv2.fillPoly()
-pts_left = np.array([np.transpose(np.vstack([left_fitx, yvals]))])
-pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, yvals])))])
+pts_left = np.array([np.transpose(np.vstack([left_fitx, lefty]))])
+pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, righty])))])
 pts = np.hstack((pts_left, pts_right))
 
 # Draw the lane onto the warped blank image
 cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
-
+plt.imshow(color_warp)
+plt.show()
 # Warp the blank back to original image space using inverse perspective matrix (Minv)
 newwarp = cv2.warpPerspective(color_warp, Minv, (image.shape[1], image.shape[0]))
 # Combine the result with the original image
