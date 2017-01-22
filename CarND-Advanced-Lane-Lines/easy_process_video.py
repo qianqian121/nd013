@@ -392,7 +392,7 @@ def find_lines(histogram):
     seg_max = 0
     lines = []
     # for i in range(len(histogram)):
-    for i in range(550,750):
+    for i in range(575,750):
         if in_segment is True:
             if (histogram[i] <= 0):
                 in_segment = False
@@ -490,7 +490,7 @@ def merge_segs(lines, lines_strict):
     return merged_lines
 
 
-def find_lines_pixel(img, top_down_img, top_down_img_strict):
+def find_lines_pixel(img, top_down_img):
     plt.imshow(top_down_img, cmap='gray')
     plt.show()
     # print(histogram[590:630])
@@ -572,249 +572,248 @@ def find_lines_pixel(img, top_down_img, top_down_img_strict):
     return left_array, right_array
     # return binary_output
 
+def process_image(frame):
+    # Use color transforms, gradients, etc., to create a thresholded binary image.
+    # Read in an image
+    # Choose a Sobel kernel size
+    ksize = 9  # Choose a larger odd number to smooth gradient measurements
 
-# Use color transforms, gradients, etc., to create a thresholded binary image.
-# Read in an image
-# Choose a Sobel kernel size
-ksize = 9  # Choose a larger odd number to smooth gradient measurements
+    img = frame
+    img = cv2.undistort(img, mtx, dist, None, mtx)
+    undist = img
+    combine_binary = combine_thresh(img, sobel_kernel=ksize, mag_thresh=(150, 255))
+    combine_binary_strict = combine_thresh_strict(img, sobel_kernel=ksize, mag_thresh=(150, 255))
+    plt.imshow(combine_binary, cmap='gray')
+    plt.show()
 
-img = cv2.imread('test_images/test2.jpg')
-img = cv2.imread('frame_challenge.png')
-img = cv2.imread('frame.png')
-img = cv2.undistort(img, mtx, dist, None, mtx)
-combine_binary = combine_thresh(img, sobel_kernel=ksize, mag_thresh=(150, 255))
-combine_binary_strict = combine_thresh_strict(img, sobel_kernel=ksize, mag_thresh=(150, 255))
-plt.imshow(combine_binary, cmap='gray')
-plt.show()
+    # image = mpimg.imread('test_images/test3.jpg')
+    # image = mpimg.imread('test_images/test2.jpg')
+    # image = mpimg.imread('frame_challenge.png')
+    # image = mpimg.imread('frame.png')
+    # if False:
+    #     # Apply each of the thresholding functions
+    #     gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(25, 255))
+    #     grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(25, 255))
+    #     mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(25, 255))
+    #     dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1.2))
+    #
+    #     # Plot the result
+    #     # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+    #
+    #     f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
+    #     f.tight_layout()
+    #     ax1.imshow(image)
+    #     ax1.set_title('Original Image', fontsize=50)
+    #     ax2.imshow(gradx, cmap='gray')
+    #     ax2.set_title('gradx', fontsize=15)
+    #     ax3.imshow(grady, cmap='gray')
+    #     ax3.set_title('grady', fontsize=15)
+    #     ax4.imshow(mag_binary, cmap='gray')
+    #     ax4.set_title('Magnitude', fontsize=15)
+    #     ax5.imshow(dir_binary, cmap='gray')
+    #     ax5.set_title('directional', fontsize=15)
+    #     ax6.imshow(mag_binary, cmap='gray')
+    #     ax6.set_title('Thresholded Gradient', fontsize=15)
+    #     # plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    #     plt.show()
+    #
+    #     hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    #     H = hls[:, :, 0]
+    #     L = hls[:, :, 1]
+    #     S = hls[:, :, 2]
+    #
+    #     thresh = (105, 255)
+    #     binary_S = np.zeros_like(S)
+    #     binary_S[(S > thresh[0]) & (S <= thresh[1])] = 1
+    #
+    #     thresh = (1, 90)
+    #     binary_H = np.zeros_like(S)
+    #     binary_H[(H > thresh[0]) & (H <= thresh[1])] = 1
+    #     # Lzero = np.zeros_like(L)
+    #     # hs = np.vstack(H, Lzero, S)
+    #     f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
+    #     f.tight_layout()
+    #     ax1.imshow(image)
+    #     ax1.set_title('Original Image', fontsize=50)
+    #     ax2.imshow(H, cmap='gray')
+    #     ax2.set_title('H', fontsize=15)
+    #     ax3.imshow(L, cmap='gray')
+    #     ax3.set_title('L', fontsize=15)
+    #     ax4.imshow(S, cmap='gray')
+    #     ax4.set_title('S', fontsize=15)
+    #     ax5.imshow(binary_S, cmap='gray')
+    #     ax5.set_title('binary_S', fontsize=15)
+    #     ax6.imshow(binary_H, cmap='gray')
+    #     ax6.set_title('binary_H', fontsize=15)
+    #     # plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    #     plt.show()
 
-image = mpimg.imread('test_images/test3.jpg')
-image = mpimg.imread('test_images/test2.jpg')
-image = mpimg.imread('frame_challenge.png')
-image = mpimg.imread('frame.png')
-if False:
-    # Apply each of the thresholding functions
-    gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(25, 255))
-    grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(25, 255))
-    mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(25, 255))
-    dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1.2))
+    # ax1 = plt.subplot(511)
+    # ax1.imshow(image)
+    # ax1.set_title('Original Image', fontsize=50)
+    #
+    # ax2 = plt.subplot(512, figsize=(24, 9))
+    # ax2.imshow(mag_binary, cmap='gray')
+    # ax2.set_title('Thresholded Gradient', fontsize=50)
+    #
+    # # plt.tight_layout()
+    # plt.show()
 
-    # Plot the result
+
+    # from moviepy.editor import VideoFileClip
+    # clip = VideoFileClip('project_video.mp4')
+    # clip.save_frame("frame.png", t=15)
+    if False:
+        img = cv2.imread("frame.png")
+        dst = cv2.undistort(img, mtx, dist, None, mtx)
+        plt.imshow(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB))
+        plt.show()
+        cv2.imwrite('straight_line.png', dst)
+
+    # Apply a perspective transform to rectify binary image ("birds-eye view").
+    img = mpimg.imread('straight_line_corner.png')
+    top_down_img, perspective_M, Minv = unwarp(img)
+    if False:
+        f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+        f.tight_layout()
+        ax1.imshow(img)
+        ax1.set_title('Original Image', fontsize=50)
+        ax2.imshow(top_down_img)
+        ax2.set_title('Undistorted and Warped Image', fontsize=50)
+        plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+        plt.show()
+
+    # top_down_img = cv2.warpPerspective(mag_binary, perspective_M, (image.shape[1], image.shape[0]), flags=cv2.INTER_LINEAR)
+    top_down_img = cv2.warpPerspective(combine_binary, perspective_M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
+    # top_down_img_strict = cv2.warpPerspective(combine_binary_strict, perspective_M, (img.shape[1], img.shape[0]),
+    #                                           flags=cv2.INTER_LINEAR)
+    # # warped = cv2.cvtColor(top_down_img, cv2.COLOR_RGB2GRAY)
+    # # Plot the result
     # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-
-    f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
-    f.tight_layout()
-    ax1.imshow(image)
-    ax1.set_title('Original Image', fontsize=50)
-    ax2.imshow(gradx, cmap='gray')
-    ax2.set_title('gradx', fontsize=15)
-    ax3.imshow(grady, cmap='gray')
-    ax3.set_title('grady', fontsize=15)
-    ax4.imshow(mag_binary, cmap='gray')
-    ax4.set_title('Magnitude', fontsize=15)
-    ax5.imshow(dir_binary, cmap='gray')
-    ax5.set_title('directional', fontsize=15)
-    ax6.imshow(mag_binary, cmap='gray')
-    ax6.set_title('Thresholded Gradient', fontsize=15)
+    # f.tight_layout()
+    # ax1.imshow(image)
+    # ax1.set_title('Original Image', fontsize=50)
+    # ax2.imshow(top_down_img, cmap='gray')
+    # ax2.set_title('Thresholded Gradient', fontsize=50)
     # plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    # plt.show()
+    #
+    # # plt.imsave('top_down.png', top_down_img, cmap = plt.cm.gray)
+    # # plt.imsave('top_down_strict.png', top_down_img_strict, cmap = plt.cm.gray)
+    #
+    # cv2.imwrite('top_down.png', top_down_img)
+    # cv2.imwrite('top_down_strict.png', top_down_img_strict)
+
+    img = top_down_img
+    histogram = np.sum(img[img.shape[0] / 2:, :], axis=0)
+    # img = top_down_img_strict
+    # histogram_strict = np.sum(img[img.shape[0] / 2:, :], axis=0)
+    plt.plot(histogram)
     plt.show()
 
-    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
-    H = hls[:, :, 0]
-    L = hls[:, :, 1]
-    S = hls[:, :, 2]
+    lines = find_lines(histogram)
+    # lines_strict = find_lines_strict(histogram_strict)
+    lines = concat_segs(lines, histogram)
+    # lines_strict = concat_segs(lines_strict, histogram_strict)
+    # lines_merged = merge_segs(lines, lines_strict)
 
-    thresh = (105, 255)
-    binary_S = np.zeros_like(S)
-    binary_S[(S > thresh[0]) & (S <= thresh[1])] = 1
 
-    thresh = (1, 90)
-    binary_H = np.zeros_like(S)
-    binary_H[(H > thresh[0]) & (H <= thresh[1])] = 1
-    # Lzero = np.zeros_like(L)
-    # hs = np.vstack(H, Lzero, S)
-    f, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(1, 6, figsize=(24, 9))
-    f.tight_layout()
-    ax1.imshow(image)
-    ax1.set_title('Original Image', fontsize=50)
-    ax2.imshow(H, cmap='gray')
-    ax2.set_title('H', fontsize=15)
-    ax3.imshow(L, cmap='gray')
-    ax3.set_title('L', fontsize=15)
-    ax4.imshow(S, cmap='gray')
-    ax4.set_title('S', fontsize=15)
-    ax5.imshow(binary_S, cmap='gray')
-    ax5.set_title('binary_S', fontsize=15)
-    ax6.imshow(binary_H, cmap='gray')
-    ax6.set_title('binary_H', fontsize=15)
-    # plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+
+
+    left, right = find_lines_pixel(top_down_img, top_down_img)
+
+    # # Generate some fake data to represent lane-line pixels
+    # yvals = np.linspace(0, 100, num=101)*7.2  # to cover same y-range as image
+    # leftx = np.array([200 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
+    #                               for idx, elem in enumerate(yvals)])
+    # leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
+    # rightx = np.array([900 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
+    #                                 for idx, elem in enumerate(yvals)])
+    # rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
+
+    lefty = left[:, 0]
+    leftx = left[:, 1]
+
+    righty = right[:, 0]
+    rightx = right[:, 1]
+
+    fity = np.arange(img.shape[0])
+
+    # Fit a second order polynomial to each fake lane line
+    left_fit = np.polyfit(lefty, leftx, 2)
+    left_fitx = left_fit[0] * fity ** 2 + left_fit[1] * fity + left_fit[2]
+    right_fit = np.polyfit(righty, rightx, 2)
+    right_fitx = right_fit[0] * fity ** 2 + right_fit[1] * fity + right_fit[2]
+
+    # Plot up the fake data
+    plt.plot(leftx, lefty, 'o', color='red')
+    plt.plot(rightx, righty, 'o', color='blue')
+    plt.xlim(0, 1280)
+    plt.ylim(0, 720)
+    plt.plot(left_fitx, fity, color='green', linewidth=3)
+    plt.plot(right_fitx, fity, color='green', linewidth=3)
+    plt.gca().invert_yaxis()  # to visualize as we do the images
     plt.show()
+    #
+    # # Define y-value where we want radius of curvature
+    # # I'll choose the maximum y-value, corresponding to the bottom of the image
+    # y_eval = np.max(lefty)
+    # left_curverad = ((1 + (2 * left_fit[0] * y_eval + left_fit[1]) ** 2) ** 1.5) \
+    #                 / np.absolute(2 * left_fit[0])
+    # y_eval = np.max(righty)
+    # right_curverad = ((1 + (2 * right_fit[0] * y_eval + right_fit[1]) ** 2) ** 1.5) \
+    #                  / np.absolute(2 * right_fit[0])
+    # print(left_curverad, right_curverad)
+    # # Example values: 1163.9    1213.7
+    #
+    #
+    # #
+    # # # Define conversions in x and y from pixels space to meters
+    # # ym_per_pix = 30/720 # meters per pixel in y dimension
+    # # xm_per_pix = 3.7/700 # meteres per pixel in x dimension
+    # #
+    # # left_fit_cr = np.polyfit(yvals*ym_per_pix, leftx*xm_per_pix, 2)
+    # # right_fit_cr = np.polyfit(yvals*ym_per_pix, rightx*xm_per_pix, 2)
+    # # left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
+    # #                              /np.absolute(2*left_fit_cr[0])
+    # # right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
+    # #                                 /np.absolute(2*right_fit_cr[0])
+    # # # Now our radius of curvature is in meters
+    # # print(left_curverad, 'm', right_curverad, 'm')
+    # # # Example values: 3380.7 m    3189.3 m
+    # #
 
-# ax1 = plt.subplot(511)
-# ax1.imshow(image)
-# ax1.set_title('Original Image', fontsize=50)
-#
-# ax2 = plt.subplot(512, figsize=(24, 9))
-# ax2.imshow(mag_binary, cmap='gray')
-# ax2.set_title('Thresholded Gradient', fontsize=50)
-#
-# # plt.tight_layout()
-# plt.show()
 
 
-# from moviepy.editor import VideoFileClip
-# clip = VideoFileClip('project_video.mp4')
-# clip.save_frame("frame.png", t=15)
-if False:
-    img = cv2.imread("frame.png")
-    dst = cv2.undistort(img, mtx, dist, None, mtx)
-    plt.imshow(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB))
+    # Create an image to draw the lines on
+    # undist = image
+    warped = top_down_img
+    warp_zero = np.zeros_like(warped).astype(np.uint8)
+    color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
+
+    # Recast the x and y points into usable format for cv2.fillPoly()
+    pts_left = np.array([np.transpose(np.vstack([left_fitx, fity]))])
+    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, fity])))])
+    # pts_right = np.array([np.transpose(np.vstack([right_fitx, fity]))])
+    pts = np.hstack((pts_left, pts_right))
+
+    # Draw the lane onto the warped blank image
+    cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
+    plt.imshow(color_warp)
     plt.show()
-    cv2.imwrite('straight_line.png', dst)
-
-# Apply a perspective transform to rectify binary image ("birds-eye view").
-img = mpimg.imread('straight_line_corner.png')
-top_down_img, perspective_M, Minv = unwarp(img)
-if False:
-    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-    f.tight_layout()
-    ax1.imshow(img)
-    ax1.set_title('Original Image', fontsize=50)
-    ax2.imshow(top_down_img)
-    ax2.set_title('Undistorted and Warped Image', fontsize=50)
-    plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
+    # Warp the blank back to original image space using inverse perspective matrix (Minv)
+    newwarp = cv2.warpPerspective(color_warp, Minv, (undist.shape[1], undist.shape[0]))
+    # Combine the result with the original image
+    plt.imshow(newwarp)
     plt.show()
-
-# top_down_img = cv2.warpPerspective(mag_binary, perspective_M, (image.shape[1], image.shape[0]), flags=cv2.INTER_LINEAR)
-top_down_img = cv2.warpPerspective(combine_binary, perspective_M, (img.shape[1], img.shape[0]), flags=cv2.INTER_LINEAR)
-top_down_img_strict = cv2.warpPerspective(combine_binary_strict, perspective_M, (img.shape[1], img.shape[0]),
-                                          flags=cv2.INTER_LINEAR)
-# warped = cv2.cvtColor(top_down_img, cv2.COLOR_RGB2GRAY)
-# Plot the result
-f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-f.tight_layout()
-ax1.imshow(image)
-ax1.set_title('Original Image', fontsize=50)
-ax2.imshow(top_down_img, cmap='gray')
-ax2.set_title('Thresholded Gradient', fontsize=50)
-plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-plt.show()
-
-# plt.imsave('top_down.png', top_down_img, cmap = plt.cm.gray)
-# plt.imsave('top_down_strict.png', top_down_img_strict, cmap = plt.cm.gray)
-
-cv2.imwrite('top_down.png', top_down_img)
-cv2.imwrite('top_down_strict.png', top_down_img_strict)
-
-img = top_down_img
-histogram = np.sum(img[img.shape[0] / 2:, :], axis=0)
-img = top_down_img_strict
-histogram_strict = np.sum(img[img.shape[0] / 2:, :], axis=0)
-plt.plot(histogram)
-plt.show()
-
-lines = find_lines(histogram)
-# lines_strict = find_lines_strict(histogram_strict)
-lines = concat_segs(lines, histogram)
-# lines_strict = concat_segs(lines_strict, histogram_strict)
-# lines_merged = merge_segs(lines, lines_strict)
-
-
-
-
-left, right = find_lines_pixel(top_down_img, top_down_img, top_down_img_strict)
-
-# # Generate some fake data to represent lane-line pixels
-# yvals = np.linspace(0, 100, num=101)*7.2  # to cover same y-range as image
-# leftx = np.array([200 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
-#                               for idx, elem in enumerate(yvals)])
-# leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
-# rightx = np.array([900 + (elem**2)*4e-4 + np.random.randint(-50, high=51)
-#                                 for idx, elem in enumerate(yvals)])
-# rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
-
-lefty = left[:, 0]
-leftx = left[:, 1]
-
-righty = right[:, 0]
-rightx = right[:, 1]
-
-fity = np.arange(img.shape[0])
-
-# Fit a second order polynomial to each fake lane line
-left_fit = np.polyfit(lefty, leftx, 2)
-left_fitx = left_fit[0] * fity ** 2 + left_fit[1] * fity + left_fit[2]
-right_fit = np.polyfit(righty, rightx, 2)
-right_fitx = right_fit[0] * fity ** 2 + right_fit[1] * fity + right_fit[2]
-
-# Plot up the fake data
-plt.plot(leftx, lefty, 'o', color='red')
-plt.plot(rightx, righty, 'o', color='blue')
-plt.xlim(0, 1280)
-plt.ylim(0, 720)
-plt.plot(left_fitx, fity, color='green', linewidth=3)
-plt.plot(right_fitx, fity, color='green', linewidth=3)
-plt.gca().invert_yaxis()  # to visualize as we do the images
-plt.show()
-
-# Define y-value where we want radius of curvature
-# I'll choose the maximum y-value, corresponding to the bottom of the image
-y_eval = np.max(lefty)
-left_curverad = ((1 + (2 * left_fit[0] * y_eval + left_fit[1]) ** 2) ** 1.5) \
-                / np.absolute(2 * left_fit[0])
-y_eval = np.max(righty)
-right_curverad = ((1 + (2 * right_fit[0] * y_eval + right_fit[1]) ** 2) ** 1.5) \
-                 / np.absolute(2 * right_fit[0])
-print(left_curverad, right_curverad)
-# Example values: 1163.9    1213.7
-
-
-#
-# # Define conversions in x and y from pixels space to meters
-# ym_per_pix = 30/720 # meters per pixel in y dimension
-# xm_per_pix = 3.7/700 # meteres per pixel in x dimension
-#
-# left_fit_cr = np.polyfit(yvals*ym_per_pix, leftx*xm_per_pix, 2)
-# right_fit_cr = np.polyfit(yvals*ym_per_pix, rightx*xm_per_pix, 2)
-# left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
-#                              /np.absolute(2*left_fit_cr[0])
-# right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
-#                                 /np.absolute(2*right_fit_cr[0])
-# # Now our radius of curvature is in meters
-# print(left_curverad, 'm', right_curverad, 'm')
-# # Example values: 3380.7 m    3189.3 m
-#
-
-
-
-# Create an image to draw the lines on
-undist = image
-warped = top_down_img
-warp_zero = np.zeros_like(warped).astype(np.uint8)
-color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
-
-# Recast the x and y points into usable format for cv2.fillPoly()
-pts_left = np.array([np.transpose(np.vstack([left_fitx, fity]))])
-pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, fity])))])
-# pts_right = np.array([np.transpose(np.vstack([right_fitx, fity]))])
-pts = np.hstack((pts_left, pts_right))
-
-# Draw the lane onto the warped blank image
-cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
-plt.imshow(color_warp)
-plt.show()
-# Warp the blank back to original image space using inverse perspective matrix (Minv)
-newwarp = cv2.warpPerspective(color_warp, Minv, (image.shape[1], image.shape[0]))
-# Combine the result with the original image
-plt.imshow(newwarp)
-plt.show()
-plt.imshow(undist)
-plt.show()
-newwarp = newwarp.astype(np.float32)
-print(newwarp.shape)
-print(undist.shape)
-result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
-plt.imshow(result)
-plt.show()
+    plt.imshow(undist)
+    plt.show()
+    # newwarp = newwarp.astype(np.float32)
+    print(newwarp.shape)
+    print(undist.shape)
+    result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
+    plt.imshow(result)
+    plt.show()
 
 
 
@@ -825,10 +824,8 @@ myclip = VideoFileClip('project_video.mp4')
 # myclip = VideoFileClip('challenge_video.mp4')
 # myclip = VideoFileClip('harder_challenge_video.mp4')
 for frame in myclip.iter_frames():
-    combine_binary = combine_thresh_debug(frame, sobel_kernel=ksize, mag_thresh=(150, 255))
-    # combine_binary = combine_thresh_color_sobel(frame, sobel_kernel=ksize, mag_thresh=(150, 255))
-    plt.imshow(combine_binary, cmap='gray')
-    plt.show()
+    process_image(frame)
+
 ''''
 # Define a class to receive the characteristics of each line detection
 class Line():
