@@ -392,7 +392,7 @@ def find_lines(histogram):
     seg_max = 0
     lines = []
     # for i in range(len(histogram)):
-    for i in range(575,750):
+    for i in range(580,750):
         if in_segment is True:
             if (histogram[i] <= 0):
                 in_segment = False
@@ -490,9 +490,9 @@ def merge_segs(lines, lines_strict):
     return merged_lines
 
 
-def find_lines_pixel(img, top_down_img):
-    plt.imshow(top_down_img, cmap='gray')
-    plt.show()
+def find_lines_pixel_fixme(img, top_down_img):
+    # plt.imshow(top_down_img, cmap='gray')
+    # plt.show()
     # print(histogram[590:630])
     height = img.shape[0]
     width = img.shape[1]
@@ -529,8 +529,96 @@ def find_lines_pixel(img, top_down_img):
         # lines = concat_segs(lines, histogram)
         # lines_strict = concat_segs(lines_strict, histogram_strict)
         # lines_merged = merge_segs(lines, lines_strict)
-        start = lines[0]
-        end = -lines[2]
+        if len(lines) >= 3:
+            start = lines[0]
+            end = -lines[2]
+            left_line_image = np.copy(img[i - window_size : i, :])
+            right_line_image = np.copy(img[i - window_size: i, :])
+            left_line_image[:, 0:start] = 0
+            left_line_image[:, end:width] = 0
+
+            left_line_image_top = np.copy(img[i + 1 - histo_window : i + 1 - histo_window + window_size, :])
+            right_line_image_top = np.copy(img[i + 1 - histo_window : i + 1 - histo_window + window_size, :])
+            left_line_image_top[:, 0:start] = 0
+            left_line_image_top[:, end:width] = 0
+
+            for j in range(window_size):
+                for k in range(start, end):
+                    if left_line_image[j][k] == 1:
+                        left.append([j + i - window_size,k])
+                    if left_line_image_top[j][k] == 1:
+                        left.append([j + i - window_size - histo_window, k])
+
+        if len(lines) >= 6:
+            startr = lines[3]
+            endr = -lines[5]
+
+            right_line_image[:, 0:startr] = 0
+            right_line_image[:, endr:width] = 0
+
+            right_line_image_top[:, 0:startr] = 0
+            right_line_image_top[:, endr:width] = 0
+            for j in range(window_size):
+                for k in range(startr, endr):
+                    if right_line_image[j][k] == 1:
+                        right.append([j + i - window_size,k])
+                    if right_line_image_top[j][k] == 1:
+                        right.append([j + i - window_size - histo_window,k])
+        # plt.imshow(right_line_image_top, cmap='gray')
+        # plt.show()
+        # plt.imshow(left_line_image_top, cmap='gray')
+        # plt.show()
+
+    left_array = np.asarray(left)
+    right_array = np.asarray(right)
+        # print(leftx_array.shape)    # for i in range(height / 2 - 1, -1, -window_size):
+
+    return left_array, right_array
+    # return binary_output
+
+
+def find_lines_pixel(img, top_down_img):
+    # plt.imshow(top_down_img, cmap='gray')
+    # plt.show()
+    # print(histogram[590:630])
+    height = img.shape[0]
+    width = img.shape[1]
+    window_num = 10
+    window_size = int(height / window_num)
+    histo_window = int(height / 2)
+    left = []
+    right = []
+    for i in range(height - 1, histo_window, -window_size):
+        img = top_down_img
+        histogram = np.sum(img[i - histo_window : i, :], axis=0)
+        histo_img = np.copy(img[i - histo_window: i, :])
+        histogram = np.array(histogram)
+        # print(histogram.shape)
+        # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+        # f.tight_layout()
+        # ax1.imshow(histo_img, cmap='gray')
+        # ax1.set_title('Original Image', fontsize=50)
+        # ax2.plot(histogram)
+        # # plt.plot(histogram)
+        # plt.show()
+        # # img = top_down_img_strict
+        # # histogram_strict = np.sum(img[i - histo_window : i, :], axis=0)
+        # # histo_img = np.copy(img[i - histo_window: i, :])
+        # # f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
+        # # f.tight_layout()
+        # # ax1.imshow(histo_img, cmap='gray')
+        # # ax1.set_title('Original Image', fontsize=50)
+        # # ax2.plot(histogram_strict)
+        # # # plt.plot(histogram)
+        # # plt.show()
+        # lines = find_lines(histogram)
+        # lines_strict = find_lines_strict(histogram_strict)
+        # lines = concat_segs(lines, histogram)
+        # lines_strict = concat_segs(lines_strict, histogram_strict)
+        # lines_merged = merge_segs(lines, lines_strict)
+        # if len(lines) >= 3:
+        start = 580
+        end = 620
         left_line_image = np.copy(img[i - window_size : i, :])
         right_line_image = np.copy(img[i - window_size: i, :])
         left_line_image[:, 0:start] = 0
@@ -541,29 +629,32 @@ def find_lines_pixel(img, top_down_img):
         left_line_image_top[:, 0:start] = 0
         left_line_image_top[:, end:width] = 0
 
-        startr = lines[3]
-        endr = -lines[5]
-
-        right_line_image[:, 0:startr] = 0
-        right_line_image[:, endr:width] = 0
-
-        right_line_image_top[:, 0:startr] = 0
-        right_line_image_top[:, endr:width] = 0
-        # plt.imshow(right_line_image_top, cmap='gray')
-        # plt.show()
-        # plt.imshow(left_line_image_top, cmap='gray')
-        # plt.show()
         for j in range(window_size):
             for k in range(start, end):
                 if left_line_image[j][k] == 1:
                     left.append([j + i - window_size,k])
                 if left_line_image_top[j][k] == 1:
                     left.append([j + i - window_size - histo_window, k])
+
+        # if len(lines) >= 6:
+        startr = 680
+        endr = 720
+
+        right_line_image[:, 0:startr] = 0
+        right_line_image[:, endr:width] = 0
+
+        right_line_image_top[:, 0:startr] = 0
+        right_line_image_top[:, endr:width] = 0
+        for j in range(window_size):
             for k in range(startr, endr):
                 if right_line_image[j][k] == 1:
                     right.append([j + i - window_size,k])
                 if right_line_image_top[j][k] == 1:
                     right.append([j + i - window_size - histo_window,k])
+        # plt.imshow(right_line_image_top, cmap='gray')
+        # plt.show()
+        # plt.imshow(left_line_image_top, cmap='gray')
+        # plt.show()
 
     left_array = np.asarray(left)
     right_array = np.asarray(right)
@@ -571,6 +662,7 @@ def find_lines_pixel(img, top_down_img):
 
     return left_array, right_array
     # return binary_output
+
 
 def process_image(frame):
     # Use color transforms, gradients, etc., to create a thresholded binary image.
@@ -583,8 +675,8 @@ def process_image(frame):
     undist = img
     combine_binary = combine_thresh(img, sobel_kernel=ksize, mag_thresh=(150, 255))
     combine_binary_strict = combine_thresh_strict(img, sobel_kernel=ksize, mag_thresh=(150, 255))
-    plt.imshow(combine_binary, cmap='gray')
-    plt.show()
+    # plt.imshow(combine_binary, cmap='gray')
+    # plt.show()
 
     # image = mpimg.imread('test_images/test3.jpg')
     # image = mpimg.imread('test_images/test2.jpg')
@@ -708,8 +800,8 @@ def process_image(frame):
     histogram = np.sum(img[img.shape[0] / 2:, :], axis=0)
     # img = top_down_img_strict
     # histogram_strict = np.sum(img[img.shape[0] / 2:, :], axis=0)
-    plt.plot(histogram)
-    plt.show()
+    # plt.plot(histogram)
+    # plt.show()
 
     lines = find_lines(histogram)
     # lines_strict = find_lines_strict(histogram_strict)
@@ -731,6 +823,9 @@ def process_image(frame):
     #                                 for idx, elem in enumerate(yvals)])
     # rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
 
+    if len(left) < 10 or len(right) < 10:
+        return undist
+
     lefty = left[:, 0]
     leftx = left[:, 1]
 
@@ -745,15 +840,15 @@ def process_image(frame):
     right_fit = np.polyfit(righty, rightx, 2)
     right_fitx = right_fit[0] * fity ** 2 + right_fit[1] * fity + right_fit[2]
 
-    # Plot up the fake data
-    plt.plot(leftx, lefty, 'o', color='red')
-    plt.plot(rightx, righty, 'o', color='blue')
-    plt.xlim(0, 1280)
-    plt.ylim(0, 720)
-    plt.plot(left_fitx, fity, color='green', linewidth=3)
-    plt.plot(right_fitx, fity, color='green', linewidth=3)
-    plt.gca().invert_yaxis()  # to visualize as we do the images
-    plt.show()
+    # # Plot up the fake data
+    # plt.plot(leftx, lefty, 'o', color='red')
+    # plt.plot(rightx, righty, 'o', color='blue')
+    # plt.xlim(0, 1280)
+    # plt.ylim(0, 720)
+    # plt.plot(left_fitx, fity, color='green', linewidth=3)
+    # plt.plot(right_fitx, fity, color='green', linewidth=3)
+    # plt.gca().invert_yaxis()  # to visualize as we do the images
+    # plt.show()
     #
     # # Define y-value where we want radius of curvature
     # # I'll choose the maximum y-value, corresponding to the bottom of the image
@@ -799,21 +894,22 @@ def process_image(frame):
 
     # Draw the lane onto the warped blank image
     cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
-    plt.imshow(color_warp)
-    plt.show()
+    # plt.imshow(color_warp)
+    # plt.show()
     # Warp the blank back to original image space using inverse perspective matrix (Minv)
     newwarp = cv2.warpPerspective(color_warp, Minv, (undist.shape[1], undist.shape[0]))
     # Combine the result with the original image
-    plt.imshow(newwarp)
-    plt.show()
-    plt.imshow(undist)
-    plt.show()
+    # plt.imshow(newwarp)
+    # plt.show()
+    # plt.imshow(undist)
+    # plt.show()
     # newwarp = newwarp.astype(np.float32)
     print(newwarp.shape)
     print(undist.shape)
     result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
-    plt.imshow(result)
-    plt.show()
+    # plt.imshow(result)
+    # plt.show()
+    return result
 
 
 
@@ -821,10 +917,17 @@ def process_image(frame):
 from moviepy.editor import VideoFileClip
 from IPython.display import HTML
 myclip = VideoFileClip('project_video.mp4')
+# myclip = VideoFileClip('project_video.mp4').subclip(t_start=23.00)
 # myclip = VideoFileClip('challenge_video.mp4')
 # myclip = VideoFileClip('harder_challenge_video.mp4')
-for frame in myclip.iter_frames():
-    process_image(frame)
+# for frame in myclip.iter_frames():
+#     process_image(frame)
+
+white_output = 'white.mp4'
+# clip1 = VideoFileClip("solidWhiteRight.mp4").subclip(t_start=0)
+#clip1 = VideoFileClip("solidWhiteRight.mp4").subclip(t_start=8.32)
+white_clip = myclip.fl_image(process_image) #NOTE: this function expects color images!!
+white_clip.write_videofile(white_output, audio=False)
 
 ''''
 # Define a class to receive the characteristics of each line detection
