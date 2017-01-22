@@ -684,20 +684,35 @@ def find_lines_pixel(img, top_down_img, top_down_img_strict):
         left_line_image[:, 0:start] = 0
         left_line_image[:, end:width] = 0
 
+        left_line_image_top = np.copy(img[i + 1 - histo_window : i + 1 - histo_window + window_size, :])
+        right_line_image_top = np.copy(img[i + 1 - histo_window : i + 1 - histo_window + window_size, :])
+        left_line_image_top[:, 0:start] = 0
+        left_line_image_top[:, end:width] = 0
+
         startr = lines[3]
         endr = -lines[5]
 
         right_line_image[:, 0:startr] = 0
         right_line_image[:, endr:width] = 0
-        # plt.imshow(right_line_image, cmap='gray')
+
+        right_line_image_top[:, 0:startr] = 0
+        right_line_image_top[:, endr:width] = 0
+        # plt.imshow(right_line_image_top, cmap='gray')
+        # plt.show()
+        # plt.imshow(left_line_image_top, cmap='gray')
         # plt.show()
         for j in range(window_size):
             for k in range(start, end):
                 if left_line_image[j][k] == 1:
                     left.append([j + i - window_size,k])
+                if left_line_image_top[j][k] == 1:
+                    left.append([j + i - window_size - histo_window, k])
             for k in range(startr, endr):
                 if right_line_image[j][k] == 1:
                     right.append([j + i - window_size,k])
+                if right_line_image_top[j][k] == 1:
+                    right.append([j + i - window_size - histo_window,k])
+
     left_array = np.asarray(left)
     right_array = np.asarray(right)
         # print(leftx_array.shape)    # for i in range(height / 2 - 1, -1, -window_size):
@@ -723,19 +738,21 @@ leftx = left[:,1]
 righty = right[:,0]
 rightx = right[:,1]
 
+fity = np.arange(img.shape[0])
+
 # Fit a second order polynomial to each fake lane line
 left_fit = np.polyfit(lefty, leftx, 2)
-left_fitx = left_fit[0]*lefty**2 + left_fit[1]*lefty + left_fit[2]
+left_fitx = left_fit[0]*fity**2 + left_fit[1]*fity + left_fit[2]
 right_fit = np.polyfit(righty, rightx, 2)
-right_fitx = right_fit[0]*righty**2 + right_fit[1]*righty + right_fit[2]
+right_fitx = right_fit[0]*fity**2 + right_fit[1]*fity + right_fit[2]
 
 # Plot up the fake data
 plt.plot(leftx, lefty, 'o', color='red')
 plt.plot(rightx, righty, 'o', color='blue')
 plt.xlim(0, 1280)
 plt.ylim(0, 720)
-plt.plot(left_fitx, lefty, color='green', linewidth=3)
-plt.plot(right_fitx, righty, color='green', linewidth=3)
+plt.plot(left_fitx, fity, color='green', linewidth=3)
+plt.plot(right_fitx, fity, color='green', linewidth=3)
 plt.gca().invert_yaxis() # to visualize as we do the images
 plt.show()
 
@@ -777,8 +794,9 @@ warp_zero = np.zeros_like(warped).astype(np.uint8)
 color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
 
 # Recast the x and y points into usable format for cv2.fillPoly()
-pts_left = np.array([np.transpose(np.vstack([left_fitx, lefty]))])
-pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, righty])))])
+pts_left = np.array([np.transpose(np.vstack([left_fitx, fity]))])
+pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, fity])))])
+# pts_right = np.array([np.transpose(np.vstack([right_fitx, fity]))])
 pts = np.hstack((pts_left, pts_right))
 
 # Draw the lane onto the warped blank image
@@ -792,6 +810,7 @@ plt.imshow(newwarp)
 plt.show()
 plt.imshow(undist)
 plt.show()
+newwarp = newwarp.astype(np.float32)
 print(newwarp.shape)
 print(undist.shape)
 result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
