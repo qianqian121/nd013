@@ -276,7 +276,10 @@ def combine_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
     print(scaled_sobel.shape)
     # plt.imshow(scaled_sobel, cmap='gray')
     # plt.show()
-
+    thresh = (50, 250)
+    G = img[:, :, 1]
+    g_binary = np.zeros_like(G)
+    g_binary[(G > thresh[0]) & (G <= thresh[1])] = 1
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
     S = hls[:,:,2]
     # plt.imshow(S, cmap='gray')
@@ -299,7 +302,7 @@ def combine_thresh(img, sobel_kernel=3, mag_thresh=(0, 255)):
 
     # Combine the two binary thresholds
     combined_binary = np.zeros_like(sxbinary)
-    combined_binary[(s_binary == 1) | (sxbinary == 1)] = 1
+    combined_binary[((s_binary == 1) | (sxbinary == 1)) & (g_binary == 1)] = 1
     # Return the binary image
     return combined_binary
 
@@ -663,8 +666,13 @@ def find_lines_pixel(img, top_down_img):
     return left_array, right_array
     # return binary_output
 
+# Early in the code before pipeline
+polygon_points_old = None
+warp_old = None
 
 def process_image(frame):
+    global polygon_points_old
+    global warp_old
     # Use color transforms, gradients, etc., to create a thresholded binary image.
     # Read in an image
     # Choose a Sobel kernel size
@@ -805,7 +813,7 @@ def process_image(frame):
 
     lines = find_lines(histogram)
     # lines_strict = find_lines_strict(histogram_strict)
-    lines = concat_segs(lines, histogram)
+    # lines = concat_segs(lines, histogram)
     # lines_strict = concat_segs(lines_strict, histogram_strict)
     # lines_merged = merge_segs(lines, lines_strict)
 
@@ -813,6 +821,8 @@ def process_image(frame):
 
 
     left, right = find_lines_pixel(top_down_img, top_down_img)
+
+
 
     # # Generate some fake data to represent lane-line pixels
     # yvals = np.linspace(0, 100, num=101)*7.2  # to cover same y-range as image
@@ -824,7 +834,8 @@ def process_image(frame):
     # rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
 
     if len(left) < 10 or len(right) < 10:
-        return undist
+        result = cv2.addWeighted(undist, 1, warp_old, 0.3, 0)
+        return result
 
     lefty = left[:, 0]
     leftx = left[:, 1]
@@ -834,13 +845,16 @@ def process_image(frame):
 
     fity = np.arange(img.shape[0])
 
+    # plt.plot(leftx, lefty, color='green', linewidth=3)
+    # plt.plot(rightx, righty, color='green', linewidth=3)
+    # plt.show()
+
     # Fit a second order polynomial to each fake lane line
     left_fit = np.polyfit(lefty, leftx, 2)
     left_fitx = left_fit[0] * fity ** 2 + left_fit[1] * fity + left_fit[2]
     right_fit = np.polyfit(righty, rightx, 2)
     right_fitx = right_fit[0] * fity ** 2 + right_fit[1] * fity + right_fit[2]
 
-    # # Plot up the fake data
     # plt.plot(leftx, lefty, 'o', color='red')
     # plt.plot(rightx, righty, 'o', color='blue')
     # plt.xlim(0, 1280)
@@ -863,21 +877,29 @@ def process_image(frame):
     #
     #
     # #
-    # # # Define conversions in x and y from pixels space to meters
-    # # ym_per_pix = 30/720 # meters per pixel in y dimension
-    # # xm_per_pix = 3.7/700 # meteres per pixel in x dimension
-    # #
-    # # left_fit_cr = np.polyfit(yvals*ym_per_pix, leftx*xm_per_pix, 2)
-    # # right_fit_cr = np.polyfit(yvals*ym_per_pix, rightx*xm_per_pix, 2)
-    # # left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
-    # #                              /np.absolute(2*left_fit_cr[0])
-    # # right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
-    # #                                 /np.absolute(2*right_fit_cr[0])
-    # # # Now our radius of curvature is in meters
-    # # print(left_curverad, 'm', right_curverad, 'm')
-    # # # Example values: 3380.7 m    3189.3 m
-    # #
+    # Define conversions in x and y from pixels space to meters
+    ym_per_pix = 30/720 # meters per pixel in y dimension
+    xm_per_pix = 3.7/700 # meteres per pixel in x dimension
 
+    left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
+    y_eval = np.max(lefty)
+    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
+                                 /np.absolute(2*left_fit_cr[0])
+    y_eval = np.max(lefty)
+    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
+                                    /np.absolute(2*right_fit_cr[0])
+    # Now our radius of curvature is in meters
+    print(left_curverad, 'm', right_curverad, 'm')
+    # Example values: 3380.7 m    3189.3 m
+
+    bottom_y = img.shape[0]
+    center = img.shape[1] / 2
+    left_lane_pix = left_fit[0] * bottom_y ** 2 + left_fit[1] * bottom_y + left_fit[2]
+    right_lane_pix = right_fit[0] * bottom_y ** 2 + right_fit[1] * bottom_y + right_fit[2]
+    lane_center_pix = (left_lane_pix + right_lane_pix) / 2
+    lane_ceter_meter = xm_per_pix * (lane_center_pix - center)
+    print(lane_ceter_meter)
 
 
     # Create an image to draw the lines on
@@ -892,12 +914,47 @@ def process_image(frame):
     # pts_right = np.array([np.transpose(np.vstack([right_fitx, fity]))])
     pts = np.hstack((pts_left, pts_right))
 
+    center_x = np.empty(img.shape[0])
+    center_x.fill(img.shape[1] / 2)
+    pts_center = np.array([np.transpose(np.vstack([center_x, fity]))])
+    right_pts = np.hstack((pts_center, pts_right))
+    right_warp = np.zeros_like(warped).astype(np.uint8)
+    cv2.fillPoly(right_warp, np.int_([right_pts]), 255)
+    # plt.imshow(right_warp)
+    # plt.show()
+
     # Draw the lane onto the warped blank image
     cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
     # plt.imshow(color_warp)
     # plt.show()
     # Warp the blank back to original image space using inverse perspective matrix (Minv)
     newwarp = cv2.warpPerspective(color_warp, Minv, (undist.shape[1], undist.shape[0]))
+
+
+    # # Convert to grayscale
+    # polygon_points = cv2.cvtColor(color_warp, cv2.COLOR_RGB2GRAY)
+    #
+    # # In the pipeline
+    #
+    # if (polygon_points_old == None):
+    #     polygon_points_old = polygon_points
+    #
+    # a = polygon_points_old
+    # b = polygon_points
+    # ret = cv2.matchShapes(a, b, 1, 0.0)
+    # print('ret ', ret)
+    # if (ret < 0.0035):
+    #     # Use the new polygon points to write the next frame due to similarites of last sucessfully written polygon area
+    #
+    #     polygon_points_old = polygon_points
+    #     warp_old = newwarp
+    #
+    # else:
+    # # Use the old polygon points to write the next frame due to iregulatires
+    # # Then write the out the old poly gon points
+    # # This will help only use your good detections
+    #     newwarp = warp_old
+
     # Combine the result with the original image
     # plt.imshow(newwarp)
     # plt.show()
@@ -909,6 +966,16 @@ def process_image(frame):
     result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
     # plt.imshow(result)
     # plt.show()
+
+    curverad = (left_curverad + right_curverad) / 2
+    curverad_str = "{} {:.0f} {}".format("Radius of Curvature = ", curverad, "(m)")
+    center_str = "{} {:.2f} {}".format("Vehicle is ", lane_ceter_meter, "m left of center")
+    # "Radius of Curvature = " curverad "(m)"
+    # "Vehicle is " lane_ceter_meter "m left of center"
+    cv2.putText(result,curverad_str, (100, 70), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2)
+    cv2.putText(result, center_str, (100, 150), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 2)
+    # plt.imshow(result)
+    # plt.show()
     return result
 
 
@@ -918,6 +985,7 @@ from moviepy.editor import VideoFileClip
 from IPython.display import HTML
 myclip = VideoFileClip('project_video.mp4')
 # myclip = VideoFileClip('project_video.mp4').subclip(t_start=23.00)
+# myclip = VideoFileClip('project_video.mp4').subclip(t_start=40.59)
 # myclip = VideoFileClip('challenge_video.mp4')
 # myclip = VideoFileClip('harder_challenge_video.mp4')
 # for frame in myclip.iter_frames():
