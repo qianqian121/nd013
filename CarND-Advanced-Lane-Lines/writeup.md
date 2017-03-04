@@ -102,7 +102,7 @@ I implemented this step in lines # through # in my code in `easy_process_video.p
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./white.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
@@ -111,4 +111,7 @@ Here's a [link to my video result](./white.mp4)
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+
+#### I spent lots of effort worked out a very robust warper() function. It works really well for small curves. For sharp curves, multiple segmentation warper() function to be implemented.
+#### For lane detection. To switch Sobel operator with Schar operator. To use segmentation to remove dark pitch on the road for challenge.mp4. To apply warper() funtion then apply edge detection. To implement OpenCV curve lane hough() to detect lane lines more robustly.
 
