@@ -1,9 +1,6 @@
 #**Traffic Sign Recognition** 
 
-##Writeup Template
-
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
+Writeup
 ---
 
 **Build a Traffic Sign Recognition Project**
@@ -19,7 +16,7 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/visualization.jpg "Visualization"
+[image1]: ./examples/visualization.png "Visualization"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
 [image4]: ./examples/placeholder.png "Traffic Sign 1"
@@ -51,6 +48,14 @@ signs data set:
 * The size of test set is ?
 * The shape of a traffic sign image is ?
 * The number of unique classes/labels in the data set is ?
+
+Number of training examples = 34799
+
+Number of testing examples = 12630
+
+Image data shape = (32, 32, 3)
+
+Number of classes = 43
 
 ####2. Include an exploratory visualization of the dataset and identify where the code is in your code file.
 
