@@ -95,17 +95,26 @@ def search_windows(img, windows, clf, scaler, color_space='RGB',
     return on_windows
     
     
+# # Read in cars and notcars
+# # images = glob.glob('*.jpeg')
+# import glob2
+# images = glob2.glob("training_pics/**/*.jpeg")
+# cars = []
+# notcars = []
+# for image in images:
+#     if 'image' in image or 'extra' in image:
+#         notcars.append(image)
+#     else:
+#         cars.append(image)
+
 # Read in cars and notcars
-# images = glob.glob('*.jpeg')
-import glob2
-images = glob2.glob("training_pics/**/*.jpeg")
-cars = []
-notcars = []
-for image in images:
-    if 'image' in image or 'extra' in image:
-        notcars.append(image)
-    else:
-        cars.append(image)
+cars = glob.glob('training_pics/vehicles/**/*.png')
+notcars = glob.glob('training_pics/non-vehicles/**/*.png')
+
+# Check that arrays are not empty
+print(cars[0])
+print(notcars[0])
+
 
 # Reduce the sample size because
 # The quiz evaluator times out after 13s of CPU time
@@ -113,18 +122,22 @@ for image in images:
 # cars = cars[0:sample_size]
 # notcars = notcars[0:sample_size]
 
+# Spatial Binning of Color: size = (16, 16)
+# Histograms of Color: nbins = 32
+# Histogram of Oriented Gradient (HOG): orient = 8, pix_per_cell = 8, cell_per_block = 2
+
 ### TODO: Tweak these parameters and see how the results change.
 color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
 orient = 9  # HOG orientations
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
 hog_channel = "ALL" # Can be 0, 1, 2, or "ALL"
-spatial_size = (16, 16) # Spatial binning dimensions
-hist_bins = 16    # Number of histogram bins
+spatial_size = (32, 32) # Spatial binning dimensions
+hist_bins = 32    # Number of histogram bins
 spatial_feat = True # Spatial features on or off
 hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
-y_start_stop = [400, 650] # Min and max in y to search in slide_window()
+y_start_stop = [400, 656] # Min and max in y to search in slide_window()
 
 car_features = extract_features(cars, color_space=color_space, 
                         spatial_size=spatial_size, hist_bins=hist_bins, 
@@ -173,16 +186,17 @@ def create_windows(pyramid, image_size):
     output = []
     for w_size, y_lims in pyramid:
         windows = slide_window(image_size, x_start_stop=[700, 1280], y_start_stop=y_lims,
-                        xy_window=w_size, xy_overlap=(0.75, 0.75))
+                        xy_window=w_size, xy_overlap=(0.5, 0.5))
         output.extend(windows)
     return output
 
-pyramid = [((64, 64),  [400, 500]),
+pyramid = [
+            # ((64, 64),  [400, 500]),
             ((96, 64),  [400, 500]),
-           ((96, 96),  [400, 500]),
+           # ((96, 96),  [400, 500]),
            ((128, 64), [400, 500]),
-           ((128, 128),[450, 578]),
-           ((192, 192),[450, 650]),
+           # ((128, 128),[450, 578]),
+           ((192, 128),[450, 650]),
 #             ((256, 256),[450, None])
       ]
 
@@ -198,10 +212,11 @@ windows = create_windows(pyramid, image_size)
 
 # Define a single function that can extract features using hog sub-sampling and make predictions
 def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size, hist_bins):
-    draw_img = np.copy(img)
+    xstart = 656
+    draw_img = np.copy(img[:, xstart:1280, :])
     img = img.astype(np.float32) / 255
 
-    img_tosearch = img[ystart:ystop, :, :]
+    img_tosearch = img[ystart:ystop, xstart:1280, :]
     ctrans_tosearch = convert_color(img_tosearch, conv='RGB2YCrCb')
     if scale != 1:
         imshape = ctrans_tosearch.shape
@@ -226,6 +241,9 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
     hog1 = get_hog_features(ch1, orient, pix_per_cell, cell_per_block, feature_vec=False)
     hog2 = get_hog_features(ch2, orient, pix_per_cell, cell_per_block, feature_vec=False)
     hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block, feature_vec=False)
+
+    # Initialize a list to append window positions to
+    window_list = []
 
     for xb in range(nxsteps):
         for yb in range(nysteps):
@@ -257,29 +275,128 @@ def find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, ce
                 xbox_left = np.int(xleft * scale)
                 ytop_draw = np.int(ytop * scale)
                 win_draw = np.int(window * scale)
-                cv2.rectangle(draw_img, (xbox_left, ytop_draw + ystart),
-                              (xbox_left + win_draw, ytop_draw + win_draw + ystart), (0, 0, 255), 6)
+                # cv2.rectangle(draw_img, (xbox_left, ytop_draw + ystart),
+                #               (xbox_left + win_draw, ytop_draw + win_draw + ystart), (0, 0, 255), 6)
+                # Append window position to list
+                window_list.append(((xstart+xbox_left, ytop_draw + ystart), (xstart+xbox_left + win_draw, ytop_draw + win_draw + ystart)))
 
-    return draw_img
-
+    # return draw_img
+    return window_list
 
 ystart = 400
 ystop = 656
 scale = 1.5
 
-out_img = find_cars(img, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
-                    hist_bins)
 
+def process_image_draw(image):
+    out_img = find_cars(image, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                        hist_bins)
+    return out_img
+
+history_window_one = None
+history_window_two = None
+
+def get_labeled_bboxes(labels):
+    # Iterate through all detected cars
+    boxes = []
+    for car_number in range(1, labels[1]+1):
+        # Find pixels with each car_number label value
+        nonzero = (labels[0] == car_number).nonzero()
+        # Identify x and y values of those pixels
+        nonzeroy = np.array(nonzero[0])
+        nonzerox = np.array(nonzero[1])
+        # Define a bounding box based on min/max x and y
+        bbox = ((np.min(nonzerox), np.min(nonzeroy)), (np.max(nonzerox), np.max(nonzeroy)))
+        # Draw the box on the image
+        # cv2.rectangle(img, bbox[0], bbox[1], (0,0,255), 6)
+        boxes.append(bbox)
+    # Return the image
+    return boxes
+
+def add_heat_val(heatmap, bbox_list, val):
+    # Iterate through list of bboxes
+    for box in bbox_list:
+        # Add += 1 for all pixels inside each bbox
+        # Assuming each "box" takes the form ((x1, y1), (x2, y2))
+        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += val
+
+    # Return updated heatmap
+    return heatmap
 
 def process_image(image):
+    global history_window_one
+    global history_window_two
+    hot_windows = []
+    hot_windows1p5 = find_cars(image, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                        hist_bins)
+
+    hot_windows.extend(hot_windows1p5)
+
+    hot_windows1p25 = find_cars(image, ystart, ystop, 1.25, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                        hist_bins)
+    hot_windows.extend(hot_windows1p25)
+
+    hot_windows1p1 = find_cars(image, ystart, ystop, 1.1, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                        hist_bins)
+    hot_windows.extend(hot_windows1p1)
+
+    draw_image = np.copy(image)
+    window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
+
+    # plt.imshow(window_img)
+    # plt.show()
+
+    from scipy.ndimage.measurements import label
+    # heat = np.zeros_like(image[:,:,0]).astype(np.float)
+    heat = np.zeros_like(image[:,:,0])
+    heatmap = add_heat(heat, hot_windows)
+    heatmap = apply_threshold(heatmap, 5)
+    labels = label(heatmap)
+    print(labels[1], 'cars found')
+    # plt.imshow(labels[0], cmap='gray')
+    # plt.show()
+    # Draw bounding boxes on a copy of the image
+    # draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    # Display the image
+    # plt.imshow(draw_img)
+    # plt.show()
+    current_heat_windows = get_labeled_bboxes(labels)
+
+    heat = np.zeros_like(image[:, :, 0])
+    if history_window_one is not None:
+        heatmap = add_heat_val(heat, history_window_one, val=10)
+    if history_window_two is not None:
+        heatmap = add_heat_val(heatmap, history_window_two, val=10)
+    heatmap = add_heat_val(heatmap, current_heat_windows, val=1)
+    heatmap = apply_threshold(heatmap, 9)
+    labels = label(heatmap)
+    print(labels[1], 'cars found')
+    # plt.imshow(labels[0], cmap='gray')
+    # plt.show()
+
+    history_window_one = history_window_two
+    history_window_two = current_heat_windows
+
+    draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    # plt.imshow(draw_img)
+    # plt.show()
+    return draw_img
+
+
+def process_image_raw(image):
     # global windows
     # image = mpimg.imread('bbox-example-image.jpg')
     draw_image = np.copy(image)
 
+    out_img = find_cars(image, ystart, ystop, scale, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                        hist_bins)
+
+    # plt.imshow(out_img)
+    # plt.show()
     # Uncomment the following line if you extracted training
     # data from .png images (scaled 0 to 1 by mpimg) and the
     # image you are searching is a .jpg (scaled 0 to 255)
-    # image = image.astype(np.float32)/255
+    image = image.astype(np.float32)/255
 
     # windows = slide_window(image, x_start_stop=[700, 1280], y_start_stop=y_start_stop,
     #                     xy_window=(96, 96), xy_overlap=(0.5, 0.5))
@@ -313,8 +430,8 @@ def process_image(image):
     # plt.show()
     # Draw bounding boxes on a copy of the image
     draw_img = draw_labeled_bboxes(np.copy(image), labels)
-    # Display the image
-    plt.imshow(draw_img)
+    # # Display the image
+    # plt.imshow(draw_img)
     # plt.show()
     return draw_img
 
@@ -322,9 +439,10 @@ def process_image(image):
 # Import everything needed to edit/save/watch video clips
 from moviepy.editor import VideoFileClip
 # from IPython.display import HTML
-# myclip = VideoFileClip('project_video.mp4')
+myclip = VideoFileClip('project_video.mp4')
 # myclip = VideoFileClip('project_video.mp4').subclip(t_start=46.00)
-myclip = VideoFileClip('project_video.mp4').subclip(t_start=23.00)
+# myclip = VideoFileClip('project_video.mp4').subclip(t_start=23.00)
+# myclip = VideoFileClip('project_video.mp4').subclip(t_start=23.00 + 18.80)
 # myclip = VideoFileClip('challenge_video.mp4')
 # myclip = VideoFileClip('harder_challenge_video.mp4')
 # for frame in myclip.iter_frames():
