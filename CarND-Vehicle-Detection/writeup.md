@@ -68,7 +68,7 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is in lines # 98 through # 108 of the file called `process_video.py`.  
+The code for this step is in lines # 19 through # 63 of the file called `process_video.py`.  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
@@ -76,30 +76,44 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+Here is an example using the `YCrCb` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
 
 ![alt text][image2]
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+I tried various combinations of parameters and tried RGB, HSL, YCrCb, and other color spaces. I found the following give me a Okay result:
+
+Spatial Binning of Color: size = (32, 32)
+
+Histograms of Color: nbins = 32
+
+Histogram of Oriented Gradient (HOG): orient = 9, pix_per_cell = 8, cell_per_block = 2
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+I trained a linear SVM using skimage svc. I set the test rate as 0.2.
+('Using:', 9, 'orientations', 8, 'pixels per cell and', 2, 'cells per block')
+('Feature vector length:', 8460)
+(10.26, 'Seconds to train SVC...')
+('Test Accuracy of SVC = ', 0.9882)
 
 ###Sliding Window Search
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+I decided to search scaled window positions from y range 400-656 of the image
+((64, 64),  [400, 500]),
+((96, 96),  [400, 500]),
+((128, 128),[450, 578]),
+((256, 256),[450, 656]) and came up with this:
 
 ![alt text][image3]
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Ultimately I searched on 3 scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
 ![alt text][image4]
 ---
@@ -136,3 +150,12 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
 
+I tried different color space to extract features. Training a svm linear model on both the smallest data set and complete data set. The smallest data set gave me more false positive.
+
+I tried different sliding windows, and found sliding windows position affects the result but not very much. But the feature will affect the result a lot.
+
+I'm using 3 scales of HOG features - 1.1, 1.25, 1.5. But it also slows down the prediction speed. Then I switched to HOG sub-sampling that extract the entire image HOG features.
+
+I added a filter to remove the false positive of frames that have shadows. But the filter caused the pipeline to lose track of a detected vehicle.
+
+To further improve my project, I'd like to add fast tracking feature. After a vehicle is detected, use the fast tracking feature to slide the window of the possible path of the vehicle.
