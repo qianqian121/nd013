@@ -89,20 +89,6 @@ def load_steering_coded():
     return steer_array
     #print(steerings[:100])
 
-def load_steering_three_recovery():
-    steering = pd.read_csv('driving_log.csv', header=None, usecols=[3])
-    steering = steering[3].tolist()
-    steerings = []
-    steerings.extend(steering)
-    steerings.extend(steering-0.1)
-    steerings.extend(steering+0.1)
-    #steerings.extend(steering)
-    #print(steerings)
-    steer_array = np.asarray(steerings)
-    print(steer_array.shape)
-    return steer_array
-    #print(steerings[:100])
-
 def load_steering_three():
     steering = pd.read_csv('driving_log.csv', header=None, usecols=[3])
     steering = steering[3].tolist()
@@ -168,62 +154,6 @@ def load_data():
         #images.append(img)
         # gray = img.convert('L')
         images.append(np.array(img))
-
-    immatrix = np.asarray(images, dtype=np.uint8)
-    print(immatrix.shape)
-    return immatrix
-
-def load_data_trim_recovery():
-    #img_path = 'test'
-    img_path = 'IMG/Center'
-    imglist = os.listdir(img_path)
-    list.sort(imglist)
-
-    with open('img_files.txt', 'w') as fp:
-        for s in imglist:
-            fp.write("%s\n" % s)
-    # create matrix to store all flattened images
-    # immatrix = array([array(Image.open('IMG' + '/' + im)).flatten()
-    #                  for im in imglist], 'f')
-    # import glob
-    # cv_img = []
-    # for img in glob.glob("Path/to/dir/*.jpg"):
-    #  n = cv2.imread(img)
-    #  cv_img.append(n)
-    images = []
-    for imgfile in imglist:
-        img = Image.open(img_path + '/' + imgfile)
-        #img = load_img(img_path + '/' + imgfile)
-        #img = img_to_array(img)
-        #images.append(img)
-        # gray = img.convert('L')
-        npimg = np.array(img)
-        npimg = npimg[70:129, :, :]
-        images.append(npimg)
-
-    imglist_left = os.listdir('IMG/Left')
-    list.sort(imglist_left)
-    for imgfile in imglist_left:
-        img = Image.open(img_path + '/' + imgfile)
-        #img = load_img(img_path + '/' + imgfile)
-        #img = img_to_array(img)
-        #images.append(img)
-        # gray = img.convert('L')
-        npimg = np.array(img)
-        npimg = npimg[70:129, :, :]
-        images.append(npimg)
-
-    imglist_right = os.listdir('IMG/Right')
-    list.sort(imglist_right)
-    for imgfile in imglist_right:
-        img = Image.open(img_path + '/' + imgfile)
-        #img = load_img(img_path + '/' + imgfile)
-        #img = img_to_array(img)
-        #images.append(img)
-        # gray = img.convert('L')
-        npimg = np.array(img)
-        npimg = npimg[70:129, :, :]
-        images.append(npimg)
 
     immatrix = np.asarray(images, dtype=np.uint8)
     print(immatrix.shape)
@@ -446,41 +376,6 @@ def test_data_single():
     np.savetxt("steering.txt", y_train, delimiter=",")
     np.savetxt("result.txt", result_train, delimiter=",")
 
-def get_img_name(imglist):
-    # print(imglist)
-    imgnames = []
-    for p in imglist:
-        # print(p)
-        index = p.rfind('\\')
-        # print(index)
-        # print(p[index:])
-        imgnames.append(p[index+1:])
-    return imgnames
-
-def test_gen():
-    imgpath = 'IMG'
-    # img_log = pd.read_csv('driving_log.csv',header=None, dtype={0:str}, usecols=[0])
-    # img_log = pd.read_csv('driving_log.csv', header=None, dtype=object, usecols=[0,1,2])
-    driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[0,1,2,3, 6])
-    center = driving_log[0].astype(str).tolist()
-    center = get_img_name(center)
-    left = driving_log[1].astype(str).tolist()
-    left = get_img_name(left)
-    right = driving_log[2].astype(str).tolist()
-    right = get_img_name(right)
-    steering = driving_log[3].tolist()
-    speed = driving_log[6].tolist()
-    imglist = []
-    for i in range(len(steering)):
-        tup = (center[i], steering[i], 'c')
-        imglist.append(tup)
-        tup = (left[i], steering[i], 'l')
-        imglist.append(tup)
-        tup = (right[i], steering[i], 'r')
-        imglist.append(tup)
-    # print(imglist)
-    return imglist
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Remote Driving')
     parser.add_argument('model', type=str,
@@ -493,5 +388,4 @@ if __name__ == "__main__":
     weights_file = args.model.replace('json', 'h5')
     model.load_weights(weights_file)
 
-    test_gen()
-    # test_data()
+    test_data()
