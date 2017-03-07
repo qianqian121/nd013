@@ -88,11 +88,6 @@ To cross validate my model, I randomly split the training data into a training s
  
  My final training set had 33059 number of images. My validation set and test set had 1740 and 12630 number of images.
 
-
-The sixth code cell of the IPython notebook contains the code for augmenting the data set. I decided to generate additional data because ... To add more data to the the data set, I used the following techniques because ... 
-
-Here is an example of an original image and an augmented image:
-
 I did not augment the data set this time, because I found the training accuracy is already very high. I plan to add more data later for the class with less training images. I'm going to add gaussian blur to add more images.
 
 ####3. Describe, and identify where in your code, what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
