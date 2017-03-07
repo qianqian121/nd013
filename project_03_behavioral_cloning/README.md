@@ -126,3 +126,5 @@ With flipping image, left and right image I got enough images for training.
 After the collection process, I had 146,430 number of data points. I then preprocessed this data by crop the top 50 and bottom 20 of image. Because the sky and trees distort the model performance. After crop down the image size, the training is faster.
 
 I used this training data for training the model. 
+
+Here's a [link to my video result](./video.mp4)
