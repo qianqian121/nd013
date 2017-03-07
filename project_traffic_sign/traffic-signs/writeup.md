@@ -100,52 +100,49 @@ I did not augment the data set this time, because I found the training accuracy 
 The code for my final model is located in the 6th cell of the ipython notebook. 
 
 My final model consisted of the following layers:
-|Layer1	            |Description                                                |
-|:-----------------:|:---------------------------------------------------------:| 
-|Input 	            |32x32x1 grayscale image                                    |
-|Convolution        |5x5 filter, 1x1 stride, VALID padding, outputs 28x28x6     |
-|Activation         |RELU 	                                                    |
-|Max pooling 	    |2x2 kernel size, 2x2 stride, VALID padding, outputs 14x14x6|
-|                   |                                                           |
-|Lay2               |Description                                                |
-|Convolution        |5x5 filter, 1x1 stride, VALID padding, outputs 10x10x16    |
-|Activation         |RELU                                                       |
-|Max pooling 	    |2x2 kernel size, 2x2 stride, VALID padding, outputs 5x5x16 |
-|Flatten            |output 400                                                 |
-|                   |                                                           |
-|Layer 3            |                                                           |
-|Fully Connected    |output 120 (400 with dropout 0.7)                          |
-|Activation         |RELU                                                       |
 
-
-| Layer         		|     Description	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| Input         		| 32x32x3 RGB image   							| 
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
-| RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
- 
-
-
+| Layer 1         		|     Description	        				            	| 
+|:---------------------:|:---------------------------------------------------------:| 
+|Input 	          	    |32x32x1 grayscale image                                    | 
+|Convolution        	|5x5 filter, 1x1 stride, VALID padding, outputs 28x28x6     |
+|Activation       	    |RELU 	                                                    |
+|Max pooling 	    	|2x2 kernel size, 2x2 stride, VALID padding, outputs 14x14x6|
+|                       |                                                           |
+|Layer 2             	|Description                                                |
+|Convolution      	    |5x5 filter, 1x1 stride, VALID padding, outputs 10x10x16    |
+|Activation       	    |RELU                                                       |
+|Max pooling 	  	    |2x2 kernel size, 2x2 stride, VALID padding, outputs 5x5x16 |
+|Flatten          	    |output 400                                                 |
+|                 	    |                                                           | 
+|Layer 3          		|                                                           |
+|Fully Connected  		|output 120 (400 with dropout 0.7)                          |
+|Activation             |RELU                                                       | 
+|                 	    |                                                           |
+|Layer 4          	    |                                                           |
+|Fully Connected  	    |output 84 (120 with dropout 0.3)                           |
+|Activation       	    | RELU                                                      |
+|                 	    |                                                           |
+|Layer 5          	    |                                                           |
+|Fully connected  	    |Logits: 43 class outputs (84 with dropput 0.49)            |
+|Softmax 	     	    |One hot encode the training set                            |
+        
 ####4. Describe how, and identify where in your code, you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
 
-The code for training the model is located in the eigth cell of the ipython notebook. 
+The code for training the model is located in the 7th cell of the ipython notebook. 
 
-To train the model, I used an ....
+To train the model, I used an adam optimizar with learning rate of 0.001. Epoch size is 30 and batch size is 128.
+I used one-hot to encode the training data and calculated the cross entropy with softmax probabilities on the training classes.
+The optimizer uses the mean of cross entropy as the loss function to do the training operation. 
+
 
 ####5. Describe the approach taken for finding a solution. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
-The code for calculating the accuracy of the model is located in the ninth cell of the Ipython notebook.
+The code for calculating the accuracy of the model is located in the 8th cell of the Ipython notebook.
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ? 
-* test set accuracy of ?
+* training set accuracy of 0.98
+* validation set accuracy of 0.98 
+* test set accuracy of 0.896
 
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
