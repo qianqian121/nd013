@@ -19,11 +19,11 @@ The goals / steps of this project are the following:
 [image1]: ./examples/visualization.png "Visualization"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
-[image4]: ./examples/placeholder.png "Traffic Sign 1"
-[image5]: ./examples/placeholder.png "Traffic Sign 2"
-[image6]: ./examples/placeholder.png "Traffic Sign 3"
-[image7]: ./examples/placeholder.png "Traffic Sign 4"
-[image8]: ./examples/placeholder.png "Traffic Sign 5"
+[image4]: ./test/test_image_1.jpg "Traffic Sign 1"
+[image5]: ./test/test_image_2.jpg "Traffic Sign 2"
+[image6]: ./test/test_image_3.jpg "Traffic Sign 3"
+[image7]: ./test/test_image_4.jpg "Traffic Sign 4"
+[image8]: ./test/test_image_5.jpg "Traffic Sign 5"
 
 ## Rubric Points
 ###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.  
@@ -61,8 +61,8 @@ Number of classes = 43
 
 The code for this step is contained in the 4th code cell of the IPython notebook.  
 
-Here is an exploratory visualization of the data set. It is a bar chart showing how the training data is categorized with the class.  As the chart shows, training images are not evenly distributed (e.g. more than 1500 training images for some classes, 
-, and less than 300 training images for some other classes), which may affect the training accuracy.
+Here is an exploratory visualization of the data set. It is a bar chart showing how the training data is categorized with the class.  As the chart shows, training images are not evenly distributed (e.g. more than 1500 training examples for some classes, 
+, and less than 300 training examples for some other classes), which may affect the training accuracy.
 
 ![alt text][image1]
 
@@ -72,7 +72,7 @@ Here is an exploratory visualization of the data set. It is a bar chart showing 
 
 The code for this step is contained in the 5th code cell of the IPython notebook.
 
-As a first step, I decided to convert the images to grayscale because no significant impact are found on image recognition when color images are grayscaled; simple algorithm can be used on grayscaled images, thus the computation load is reduced and speed is increased.
+As a first step, I decided to convert the images to grayscale because no significant impact is found on image recognition when color images are grayscaled; simple algorithm can be used on grayscaled images, thus the computation load is reduced and speed is increased.
 
 Here is an example of a traffic sign image before and after grayscaling.
 
@@ -99,6 +99,7 @@ I did not augment the data set this time, because I found the training accuracy 
 
 The code for my final model is located in the 6th cell of the ipython notebook. 
 
+I used the LeNet architecture for Convolutional Neural Networks as the training model.
 My final model consisted of the following layers:
 
 | Layer 1         		|     Description	        				            	| 
@@ -151,11 +152,25 @@ If an iterative approach was chosen:
 * Which parameters were tuned? How were they adjusted and why?
 * What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
 
+My first attempt is to finish this project ASAP. Because I want to spend more time working on Keras instead of raw tensorflow. I'm using a Linear Function WX + b model from tensorflow lab. The model is not as good as CNN to classify images. So the result is not good, but after tuning the batch size and epoch, I was able to achieve the initial training accuracy at 0.80
+
 If a well known architecture was chosen:
 * What architecture was chosen?
 * Why did you believe it would be relevant to the traffic sign application?
 * How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
  
+For my re-submission, LeNet model was chosen because this architecture is good for image classification problems.
+And it can run on a cheap laptop. 
+
+Validation sets are used to evaluate the training model accuracy based on a loss function. Initially, I did not properly pre-process the training set and the training result was not very accurate on the model.
+
+I did some adjustments on the architecture by the following: 
+1) preprocessed the training images (grayscaled, normalized)
+2) properly split training data into training and validation sets
+
+I achieved a high accuracy of 0.98 on the training set and validation set. I achieved an accuracy of close 0.90 on the test set. next, I'm planning to 
+do more preprocessing on the training set to improve the accuracy. for example, balance the examples of each class, image argumentation, 
+adjust training layers etc. 
 
 ###Test a Model on New Images
 
@@ -165,8 +180,6 @@ Here are five German traffic signs that I found on the web:
 
 ![alt text][image4] ![alt text][image5] ![alt text][image6] 
 ![alt text][image7] ![alt text][image8]
-
-The first image might be difficult to classify because ...
 
 ####2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. Identify where in your code predictions were made. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
