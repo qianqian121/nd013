@@ -1,6 +1,6 @@
 #**Behavioral Cloning** 
 
-##Writeup
+Writeup
 ---
 
 **Behavioral Cloning Project**
@@ -15,13 +15,11 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
+[image1]: ./examples/model.jpg "Model Visualization"
 [image2]: ./examples/center.jpg "Center"
-[image3]: ./examples/offroad.png "off road"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[image3]: ./examples/offroad.jpg "off road"
+[image4]: ./examples/side_camera1.jpg "side camera Image"
+[image5]: ./examples/side_camera2.jpg "side camera Image"
 
 ## Rubric Points
 ###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -57,7 +55,7 @@ My model consists of a convolution neural network from Nvidia autopilot demo.
 
 ####2. Attempts to reduce overfitting in the model
 
-The training output - loss and accuracy is very different than MNIST and traffic sign projects. I noticed that loss can keep decreasing but accuracy will keep around 0.25f for my model. But the vehicle drives ok on the track.
+The training output - loss and accuracy is very different from MNIST and traffic sign projects. I noticed that loss can keep decreasing but accuracy will keep around 0.25f for my model. But the vehicle drives ok on the track.
 
 But I did realize that for a normal driving around the track, the straight track frames is much more than the curves. This will cause the model overfit for the straight line images. I added more frames to the training set if abs(steering_angle) is larger than 0.2. Adding more curve data sets to ensure that the model was not overfitting (model.py line 142-147). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
@@ -67,7 +65,7 @@ The model used an adam optimizer, the learning rate was tuned manually from defa
 
 ####4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road. When I first worked on the project, I used keyboard to control the vehicle and record data. But keyboard gives not smooth steering angel. I use XBOX controller to collect data which works really well. However, to record recovering from the sides of the road is really challenging - take lots of time and wrong playing will damage the whole data set. I plan to write some code later to record a temporary video clip, if the clip replay is good for recovering, then convert the video to the training data sets.
+Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road. When I first worked on the project, I used keyboard to control the vehicle and record data. But keyboard does not generate smooth steering angel. I used XBOX controller to collect data which worked really well. However, to record recovering from the sides of the road is really challenging - take lots of time and wrong driving operations will damage the whole data set. I plan to write some code later to record a temporary video clip, if the clip replay is good for recovering, then convert the video to the training data sets.
 
 My models works okay with center data and recovering data. I didn't add the second track data.
 
@@ -77,9 +75,9 @@ For details about how I created the training data, see the next section.
 
 ####1. Solution Design Approach
 
-My first attempt was to use a convolution neural network model similar to the comma.ai auto steering model. I thought this model might be appropriate because it's small enough to be able to work on a regular laptop.
+My first attempt was to use a convolution neural network model similar to the comma.ai auto steering model. Because it's small enough to be able to be trained on a less powerful PC such as laptop.
 
-Comma.ai can be trained really fast, but I found it is not giving the consistent result. I realized it may require higher quality data set to finish the track.
+Comma.ai can be trained really fast, but I found it was not able to give me the consistent result. I realized it may require higher quality data set to finish the track.
  
  I then switched to Nvidia CNN model. But the bigger model takes more time to train and also takes lots of time to tune the pipeline and parameters. I also spent lots of time working on different dockers to speed up the training.
 
@@ -99,7 +97,7 @@ I plan to improve my model later to allow full speed finishing the first track, 
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 89-115) consisted of a convolution neural network with the following layers and layer sizes ...
+The final model architecture (model.py lines 89-115) consisted of a convolution neural network with 9 layers, including a normalization layer, 5 convolutional layers and 3 fully connected layers. The input image is split into YUV planes and passed to the network.
 
 Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
 
