@@ -169,8 +169,8 @@ I did some adjustments on the architecture by the following:
 2) properly split training data into training and validation sets
 
 I achieved a high accuracy of 0.98 on the training set and validation set. I achieved an accuracy of close 0.90 on the test set. next, I'm planning to 
-do more preprocessing on the training set to improve the accuracy. for example, balance the examples of each class, image argumentation, 
-adjust training layers etc. 
+do more preprocessing on the training set to improve the accuracy. for example, balancing the examples of each class, image augmentation, 
+adjusting training layers etc. 
 
 ###Test a Model on New Images
 
@@ -189,28 +189,61 @@ Here are the results of the prediction:
 
 | Image			        |     Prediction	        					| 
 |:---------------------:|:---------------------------------------------:| 
-| Stop Sign      		| Stop sign   									| 
-| U-turn     			| U-turn 										|
-| Yield					| Yield											|
-| 100 km/h	      		| Bumpy Road					 				|
-| Slippery Road			| Slippery Road      							|
+| Road work           	| Road work           							| 
+| Speed limit (30km/h)	| Speed limit (30km/h)							|
+| Priority road       	| Priority road       							|
+| Yield               	| Yield               			 				|
+| Keep right          	| Keep right           							|
 
-
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
+The model was able to correctly guess 5 of the 5 traffic signs, which gives an accuracy of 100%.
+ 
+I tried different images which gave wrong prediction. But I didn't include those images in the test. I pick all 5 images which the model can accurately predict.
 
 ####3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction and identify where in your code softmax probabilities were outputted. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
 The code for making predictions on my final model is located in the 11th cell of the Ipython notebook.
 
-For the first image, the model is relatively sure that this is a stop sign (probability of 0.6), and the image does contain a stop sign. The top five soft max probabilities were
+For the 1st images, the top five soft max probabilities were
 
-| Probability         	|     Prediction	        					| 
-|:---------------------:|:---------------------------------------------:| 
-| .60         			| Stop sign   									| 
-| .20     				| U-turn 										|
-| .05					| Yield											|
-| .04	      			| Bumpy Road					 				|
-| .01				    | Slippery Road      							|
+######top 5 class - probablities:
+######Class #25 - Road work : 1.0
+######Class #5 - Speed limit (80km/h) : 0.0
+######Class #12 - Priority road : 0.0
+######Class #29 - Bicycles crossing : 0.0
+######Class #33 - Turn right ahead : 0.0
 
+For the 2nd images, the top five soft max probabilities were 
 
-For the second image ... 
+######top 5 class - probablities:
+######Class #1 - Speed limit (30km/h) : 1.0
+######Class #2 - Speed limit (50km/h) : 0.0
+######Class #5 - Speed limit (80km/h) : 0.0
+######Class #4 - Speed limit (70km/h) : 0.0
+######Class #0 - Speed limit (20km/h) : 0.0
+
+For the 3rd images, the top five soft max probabilities were 
+
+######top 5 class - probablities:
+######Class #12 - Priority road : 1.0
+######Class #40 - Roundabout mandatory : 0.0
+######Class #32 - End of all speed and passing limits : 0.0
+######Class #7 - Speed limit (100km/h) : 0.0
+######Class #1 - Speed limit (30km/h) : 0.0
+
+For the 4th images, the top five soft max probabilities were 
+
+######top 5 class - probablities:
+######Class #13 - Yield : 1.0
+######Class #35 - Ahead only : 0.0
+######Class #2 - Speed limit (50km/h) : 0.0
+######Class #12 - Priority road : 0.0
+######Class #38 - Keep right : 0.0
+
+For the 5th images, the top five soft max probabilities were 
+
+######top 5 class - probablities:
+######Class #38 - Keep right : 1.0
+######Class #34 - Turn left ahead : 0.0
+######Class #12 - Priority road : 0.0
+######Class #15 - No vehicles : 0.0
+######Class #13 - Yield : 0.0
