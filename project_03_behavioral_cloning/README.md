@@ -57,11 +57,15 @@ My model consists of a convolution neural network from Nvidia autopilot demo.
 
 The training output - loss and accuracy is very different from MNIST and traffic sign projects. I noticed that loss can keep decreasing but accuracy will keep around 0.25f for my model. But the vehicle drives ok on the track.
 
-But I did realize that for a normal driving around the track, the straight track frames is much more than the curves. This will cause the model overfit for the straight line images. I added more frames to the training set if abs(steering_angle) is larger than 0.2. Adding more curve data sets to ensure that the model was not overfitting (model.py line 142-147). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+But I did realize that for a normal driving around the track, the straight track frames is much more than the curves. This will cause the model overfit for the straight line images. I added more frames to the training set if abs(steering_angle) is larger than 0.2. Adding more curve data sets to ensure that the model was not overfitting (model.py line 153-159). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+
+With my reviewers help, I added 4 dropout layer which helps reduce overfitting.
+ 
+I didn't split the data set to validation set. Because I learned from the lesson that to finish the 1st track, a model with low validation accuracy can also finish the track. Since validation accuracy is not important, I didn't set validation data in Keras model.fit_generator().
 
 ####3. Model parameter tuning
 
-The model used an adam optimizer, the learning rate was tuned manually from default 0.001 to 0.0001 (model.py line 25). Smaller learning rate to make sure the model is not overfitting.
+The model used an adam optimizer, the learning rate was tuned manually from default 0.001 to 0.0001 (model.py line 115). Usually, smaller learning rate tends to make the model overfitting. But for this specific simulator track project, I'm thinking smaller learning rate can help me to train the model with 1 epoch - 16384 samples with a okay model to finish the easy track. 
 
 ####4. Appropriate training data
 
@@ -89,15 +93,15 @@ The final step was to run the simulator to see how well the car was driving arou
  
  This project is really challenging and also has lots of fun.
  
- To improve the driving behavior in these cases, I spent lots of effort changing different model, recollecting the training data, add more data for the curve, tuning the training parameter, slowing down the throttle/speed, etc...
+ To improve the driving behavior in these cases, I spent lots of effort changing different model parameters, recollecting the training data, add more data for the curve, tuning the training parameter, slowing down the throttle/speed, etc...
 
-At the end of the process, the vehicle is able to drive autonomously around the track. Right before the bridge, there is one spot where the car hit the yellow line then recover back. Other than that, the vehicle can run multiple laps without leaving the road.
+At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
 I plan to improve my model later to allow full speed finishing the first track, then finish the second track.
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 89-115) consisted of a convolution neural network with 9 layers, including a normalization layer, 5 convolutional layers and 3 fully connected layers. The input image is split into YUV planes and passed to the network.
+The final model architecture (model.py lines 89-119) consisted of a convolution neural network with 9 layers, including a normalization layer, 5 convolutional layers and 3 fully connected layers. The input image is split into YUV planes and passed to the network.
 
 Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
 
@@ -125,6 +129,7 @@ With flipping image, left and right image I got enough images for training.
 
 After the collection process, I had 146,430 number of data points. I then preprocessed this data by crop the top 50 and bottom 20 of image. Because the sky and trees distort the model performance. After crop down the image size, the training is faster.
 
-I used this training data for training the model. The model was trained with a batch size 128, 16384 samples per epoch, 20 epoch. The loss is 0.01, accuracy is about 0.24.
+I used this training data for training the model. The model was trained with a batch size 128, 16384 samples per epoch, 1 epoch. I'm using batch size 128 because I assume it is not too big to fit in a low end graphic card, it is not too small to slow down the training pipeline. I tried big batch size such as 4096 on a high end graphic card, and there is no change for training speed. My reviewer helped me a lot to fix my Nvidia autopilot model. With 1 epoch training, the vehicle can finish 1st track staying on the road. It takes about 70-80 seconds to train 1 epoch on my laptop.
+The loss is 0.05, accuracy is about 0.26.
 
 Here's a [link to my video result](./video.mp4)

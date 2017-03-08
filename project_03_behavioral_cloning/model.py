@@ -95,17 +95,21 @@ def get_model(time_len=1):
     model.add(Lambda(lambda x: x / 127.5 - 1.,
                      input_shape=(row, col, ch),
                      output_shape=(row, col, ch)))
-    model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2, 2)))
-    model.add(Convolution2D(36, 5, 5, border_mode='valid', subsample=(2, 2)))
-    model.add(Convolution2D(48, 5, 5, subsample=(2, 2)))
-    model.add(Convolution2D(64, 3, 3))
-    model.add(Convolution2D(64, 3, 3))
+    model.add(Convolution2D(24, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
+    model.add(Convolution2D(36, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
+    model.add(Convolution2D(48, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
+    model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', subsample=(1, 1)))
+    model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', subsample=(1, 1)))
     model.add(Flatten())
+    model.add(Dropout(.3))
     model.add(Dense((1164), activation='relu'))
+    model.add(Dropout(.3))
     model.add(Dense(100, activation='relu'))
-    model.add(Dense(50))
-    model.add(Dense(10))
-    model.add(Dense(1, name='output'))
+    model.add(Dropout(.3))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dropout(.3))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dense(1, activation='tanh', name='output'))
 
     # model.compile(optimizer="adam", loss="mse")
     model.compile(optimizer=Adam(lr=0.0001),
@@ -126,6 +130,13 @@ def get_img_name(imglist):
     return imgnames
 
 def test_gen():
+    '''
+    read in driving_log.csv, read image file names to imglist list
+    to optimize batch generator speed, real image will only be loaded in batch generator
+    'c', 'm', 'l', 'r' stands for center camera, mirrored center camera, left camera and right camera
+    data_gen() method will check 'm' and flip image
+    :return: imaglist[(image file name, steering angle, 'c'|'m'|'l'|'r')]
+    '''
     # img_log = pd.read_csv('driving_log.csv',header=None, dtype={0:str}, usecols=[0])
     # img_log = pd.read_csv('driving_log.csv', header=None, dtype=object, usecols=[0,1,2])
     driving_log = pd.read_csv('driving_log.csv', header=None, usecols=[0,1,2,3, 6])
@@ -140,7 +151,8 @@ def test_gen():
     imglist = []
 
     for i in range(len(steering)):
-        if (abs(steering[i]) > 0.2):
+        # if steering is < -0.2 or > 0.2, most likely is a curve track with sharp steering angle, add more curve data for training
+        if (abs(float(steering[i])) > 0.2):
             tup = (center[i], steering[i], 'c')
             imglist.append(tup)
             tup = (center[i], steering[i], 'c')
@@ -149,6 +161,7 @@ def test_gen():
     for i in range(len(steering)):
         tup = (center[i], steering[i], 'c')
         imglist.append(tup)
+        # add mirrored center camera with a tuple marker 'm', data_gen() checks if it is 'c' - center camera
         tup = (center[i], -steering[i], 'm')
         imglist.append(tup)
         tup = (left[i], steering[i]+0.25, 'l')
@@ -229,20 +242,22 @@ if __name__ == "__main__":
 
     print("Starting model weights and configuration file.")
 
+    imglist = test_gen()    # generate training image file name list, with tuple filed to mark center, flipped, or left, right image
+
     model = get_model()
     samples = 16384
     batch = 128
     history = model.fit_generator(
         # data_gen(test_gen(), 1),
         # samples_per_epoch=1,
-        data_gen(test_gen(), batch),
+        data_gen(imglist, batch),
         # samples_per_epoch=2048,
         # samples_per_epoch=512,
         samples_per_epoch = samples,
         # samples_per_epoch=100000,
         nb_epoch=args.epoch,
         # validation_data=gen(20, args.host, port=args.val_port),
-        nb_val_samples=2560,   #validation sample size
+        # nb_val_samples=2560,   #validation sample size
         max_q_size=65536
     )
 

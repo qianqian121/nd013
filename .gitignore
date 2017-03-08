@@ -1,12 +1,12 @@
 data
 .ipynb_checkpoints
-*.h5
+#*.h5
 models
 *.swp
 *.p
 *.pickle
 *.zip
-*.jpg
+#*.jpg
 *.jpeg
 re-submit
 .idea
@@ -21,3 +21,4 @@ re-submit
 ehthumbs.db
 Thumbs.db
 training_pics
+IMG/
