@@ -96,10 +96,15 @@ def get_model(time_len=1):
                      input_shape=(row, col, ch),
                      output_shape=(row, col, ch)))
     model.add(Convolution2D(24, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
+    model.add(Dropout(.3))
     model.add(Convolution2D(36, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
+    model.add(Dropout(.3))
     model.add(Convolution2D(48, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
+    model.add(Dropout(.3))
     model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', subsample=(1, 1)))
+    model.add(Dropout(.3))
     model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', subsample=(1, 1)))
+    model.add(Dropout(.3))
     model.add(Flatten())
     model.add(Dropout(.3))
     model.add(Dense((1164), activation='relu'))
@@ -178,7 +183,7 @@ import cv2
 batch_num = 0
 
 def data_gen(imglist, batchsize):
-    global batch_num
+    # global batch_num
     imgpath = 'IMG'
     batch = 0
     images = []
@@ -220,7 +225,7 @@ def data_gen(imglist, batchsize):
                 # print('...batch...')
                 # print(batch)
                 # batch = 0
-                batch_num = batch_num + 1
+                # batch_num = batch_num + 1
                 X_train = np.array(images)
                 y_train = np.array(angles)
                 images = []
@@ -244,20 +249,34 @@ if __name__ == "__main__":
 
     imglist = test_gen()    # generate training image file name list, with tuple filed to mark center, flipped, or left, right image
 
+    # Split up data into randomized training and test sets
+    test_size = 0.2
+    data_set_size = len(imglist)
+    # print(data_set_size)
+    test_size = int(data_set_size * test_size)
+    train_size = data_set_size - test_size
+    random.shuffle(imglist)
+    # print(test_size)
+    # print(train_size)
+    train_set = imglist[0:train_size]
+    # print(train_set)
+    test_set = imglist[train_size:data_set_size]
+    # print(test_set)
+
     model = get_model()
     samples = 16384
     batch = 128
     history = model.fit_generator(
         # data_gen(test_gen(), 1),
         # samples_per_epoch=1,
-        data_gen(imglist, batch),
+        data_gen(train_set, batch),
         # samples_per_epoch=2048,
         # samples_per_epoch=512,
         samples_per_epoch = samples,
         # samples_per_epoch=100000,
         nb_epoch=args.epoch,
-        # validation_data=gen(20, args.host, port=args.val_port),
-        # nb_val_samples=2560,   #validation sample size
+        validation_data=data_gen(test_set, batch),
+        nb_val_samples=2560,   #validation sample size
         max_q_size=65536
     )
 
