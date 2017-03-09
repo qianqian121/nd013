@@ -96,7 +96,7 @@ def get_model(time_len=1):
                      input_shape=(row, col, ch),
                      output_shape=(row, col, ch)))
     model.add(Convolution2D(24, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
-    model.add(Dropout(.5))
+    model.add(Dropout(.7))
     model.add(Convolution2D(36, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
     model.add(Dropout(.5))
     model.add(Convolution2D(48, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
@@ -169,9 +169,9 @@ def test_gen():
         # add mirrored center camera with a tuple marker 'm', data_gen() checks if it is 'c' - center camera
         tup = (center[i], -steering[i], 'm')
         imglist.append(tup)
-        tup = (left[i], steering[i]+0.25, 'l')
+        tup = (left[i], steering[i]+0.2, 'l')
         imglist.append(tup)
-        tup = (right[i], steering[i]-0.25, 'r')
+        tup = (right[i], steering[i]-0.2, 'r')
         imglist.append(tup)
     # print(imglist)
     return imglist
