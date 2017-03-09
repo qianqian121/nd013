@@ -55,9 +55,11 @@ My model consists of a convolution neural network from Nvidia autopilot demo.
 
 ####2. Attempts to reduce overfitting in the model
 
-The training output - loss and accuracy is very different from MNIST and traffic sign projects. I noticed that loss can keep decreasing but accuracy will keep around 0.25f for my model. But the vehicle drives ok on the track.
+With my reviewer's feedback, I added training/validation/test split (model.py line# 252-264). I randomly shuffled the image file name list then split 80% as training data and 20% as validation data. I'm using the same generator() to generate the image file for testing.  
 
-But I did realize that for a normal driving around the track, the straight track frames is much more than the curves. This will cause the model overfit for the straight line images. I added more frames to the training set if abs(steering_angle) is larger than 0.2. Adding more curve data sets to ensure that the model was not overfitting (model.py line 153-159). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+(The training output - loss and accuracy is very different from MNIST and traffic sign projects. I noticed that loss can keep decreasing but accuracy will keep around 0.25f for my model. But the vehicle drives ok on the track.)
+
+But I did realize that for a normal driving around the track, the straight track frames is much more than the curves. This will cause the model overfit for the straight line images. I added more frames to the training set if abs(steering_angle) is larger than 0.2. Adding more curve data sets to ensure that the model was not overfitting (model.py line 158-164). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
 With my reviewers help, I added 4 dropout layer which helps reduce overfitting.
  
@@ -65,7 +67,11 @@ I didn't split the data set to validation set. Because I learned from the lesson
 
 ####3. Model parameter tuning
 
-The model used an adam optimizer, the learning rate was tuned manually from default 0.001 to 0.0001 (model.py line 115). Usually, smaller learning rate tends to make the model overfitting. But for this specific simulator track project, I'm thinking smaller learning rate can help me to train the model with 1 epoch - 16384 samples with a okay model to finish the easy track. 
+With my reviewers help, I added more dropout layers for the convolution layers (model.py line# 99-107). These drop layers helped reduce overfitting. I changed learning rate back to default 0.001 and it works ok - can finish the track at full speed.
+
+But I cannot see any change for validation loss and accuracy, no matter how I change batch_size samples_per_epoch, epoch, the validation loss is always 0.04 at begging, and validation accuracy is about 0.22-0.26. As a deep learning beginner who learned only from Udacity self-driving course, this is the best I can do without any further help. And batch size 128 and epoch 1 works for me. I tried different value and they all went off road at some point.
+
+(The model used an adam optimizer, I tried to tune the learning rate manually from default 0.001 to 0.0001 (model.py line 120). Usually, smaller learning rate tends to make the model overfitting. But for this specific simulator track project, I'm thinking smaller learning rate can help me to train the model with 1 epoch - 16384 samples with a okay model to finish the easy track.) 
 
 ####4. Appropriate training data
 
@@ -97,7 +103,9 @@ The final step was to run the simulator to see how well the car was driving arou
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
-I plan to improve my model later to allow full speed finishing the first track, then finish the second track.
+With my reviewer's help, the new model with more dropout layers for convolution layers can finish the first track at full speed - throttle 0.9.
+
+I plan to improve my model later to finish the second track.
 
 ####2. Final Model Architecture
 
@@ -118,8 +126,8 @@ I then recorded the vehicle recovering from the left side and right sides of the
 ![alt text][image3]
 
 To augment the data set, I flipped center camera image and set -steering_angle. I added left camera image and right camera image:
-###### For left image, steering angle is adjusted by +0.25
-###### For right image, steering angle is adjusted by -0.25
+###### For left image, steering angle is adjusted by +0.2
+###### For right image, steering angle is adjusted by -0.2
 I spent very long time try to figure out the adjustment. And the final adjustment value works okay for me.
 
 ![alt text][image4]
@@ -129,7 +137,11 @@ With flipping image, left and right image I got enough images for training.
 
 After the collection process, I had 146,430 number of data points. I then preprocessed this data by crop the top 50 and bottom 20 of image. Because the sky and trees distort the model performance. After crop down the image size, the training is faster.
 
-I used this training data for training the model. The model was trained with a batch size 128, 16384 samples per epoch, 1 epoch. I'm using batch size 128 because I assume it is not too big to fit in a low end graphic card, it is not too small to slow down the training pipeline. I tried big batch size such as 4096 on a high end graphic card, and there is no change for training speed. My reviewer helped me a lot to fix my Nvidia autopilot model. With 1 epoch training, the vehicle can finish 1st track staying on the road. It takes about 70-80 seconds to train 1 epoch on my laptop.
+I used this training data for training the model. The model was trained with a batch size 128, 16384 samples per epoch, 1 epoch. I'm using batch size 128 because I assume it is not too big to fit in a low end graphic card, it is not too small to slow down the training pipeline. I tried big batch size such as 2048 (4096 will out of memory for the docker I used when training the new model with more dropouts) on a high end graphic card, and there is no change for training speed. Also bigger batch size didn't give me a working model that can stay on the track. I don't know why increase batch size can affect training results. My reviewer helped me a lot to fix my Nvidia autopilot model. With 1 epoch training, the vehicle can finish 1st track staying on the road. It takes about 170-180 seconds to train 1 epoch on my laptop.
 The loss is 0.05, accuracy is about 0.26.
+
+I tried to increase epoch but there is no difference, sometimes it's even worse. I can only set epoch as 1. I tried to change samples_per_epoch to 1024 and set epoch to 16 which from my understanding should be the same as samples_per_epoch 16384 and set epoch to 1. samples_per_epoch to 1024 and set epoch to 16 gave the same result as samples_per_epoch 16384 and set epoch to 1.
+
+Also, I found the models trained on my workstation which has Nvidia docker and Nvidia graphic card work fine. But the models trained on my laptop using CPU does not work - went off road. I don't know the reason. 
 
 Here's a [link to my video result](./video.mp4)
