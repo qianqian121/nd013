@@ -96,9 +96,9 @@ def get_model(time_len=1):
                      input_shape=(row, col, ch),
                      output_shape=(row, col, ch)))
     model.add(Convolution2D(24, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
-    model.add(Dropout(.3))
+    model.add(Dropout(.5))
     model.add(Convolution2D(36, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
-    model.add(Dropout(.3))
+    model.add(Dropout(.5))
     model.add(Convolution2D(48, 5, 5, border_mode='valid', activation='relu', subsample=(2, 2)))
     model.add(Dropout(.3))
     model.add(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', subsample=(1, 1)))
@@ -117,7 +117,7 @@ def get_model(time_len=1):
     model.add(Dense(1, activation='tanh', name='output'))
 
     # model.compile(optimizer="adam", loss="mse")
-    model.compile(optimizer=Adam(lr=0.0001),
+    model.compile(optimizer=Adam(lr=0.001),
                   loss='mse',
                   metrics=['accuracy'])
 
@@ -276,7 +276,7 @@ if __name__ == "__main__":
         # samples_per_epoch=100000,
         nb_epoch=args.epoch,
         validation_data=data_gen(test_set, batch),
-        nb_val_samples=2560,   #validation sample size
+        nb_val_samples=2048,   #validation sample size
         max_q_size=65536
     )
 
